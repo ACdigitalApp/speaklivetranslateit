@@ -1,5 +1,5 @@
-import { useState, useCallback, useMemo, useRef } from 'react';
-import { Plus, RefreshCw, Pencil, Key, Trash2, Search, DollarSign, TrendingUp, Users as UsersIcon, CreditCard, Globe, Smartphone } from 'lucide-react';
+import { useState, useCallback, useMemo } from 'react';
+import { Plus, RefreshCw, Key, Trash2, Search, DollarSign, TrendingUp, Users as UsersIcon, CreditCard, Globe, Smartphone, BarChart3 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -171,6 +171,28 @@ export default function AdminUsers() {
           <SummaryCard label="Scaduti" value={revenue.expired.toString()} icon={<UsersIcon size={16} />} />
         </div>
 
+        {/* Cross-app Revenue Dashboard */}
+        <Card className="mb-6 border-primary/20 bg-primary/5">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base flex items-center gap-2">
+              <BarChart3 size={18} className="text-primary" />
+              Incassi Totali — Tutte le App ACdigitalApp
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+              <AppRevenueCard name="SpeakEasy Translator" domain="speaklivetranslate.it" amount={revenue.totalRevenue} users={users.length} color="green" />
+              <AppRevenueCard name="Gestione Password" domain="gestionepassword.it" amount={73.96} users={7} color="blue" />
+              <AppRevenueCard name="Librifree" domain="librifree.it" amount={0} users={0} color="orange" />
+              <AppRevenueCard name="Gestione Scadenze" domain="gestionescadenze.app" amount={0} users={0} color="purple" />
+            </div>
+            <div className="flex items-center justify-between bg-primary text-primary-foreground rounded-lg px-4 py-3">
+              <span className="font-bold text-sm">💰 TOTALE GENERALE ACdigitalApp</span>
+              <span className="font-bold text-lg font-mono">€{(revenue.totalRevenue + 73.96).toFixed(2)}</span>
+            </div>
+          </CardContent>
+        </Card>
+
         {/* Filters */}
         <div className="flex flex-wrap gap-3 mb-4">
           <div className="flex-1 min-w-[200px]">
@@ -213,13 +235,13 @@ export default function AdminUsers() {
                     <TableHead>Piano</TableHead>
                     <TableHead>Provider</TableHead>
                     <TableHead>Stato Abb.</TableHead>
-                    <TableHead className="hidden md:table-cell">Scadenza</TableHead>
-                    <TableHead className="hidden md:table-cell">Tot. Pagato</TableHead>
-                    <TableHead className="hidden lg:table-cell">Saldo</TableHead>
-                    <TableHead className="hidden lg:table-cell">Notifiche</TableHead>
-                    <TableHead className="hidden xl:table-cell">WhatsApp</TableHead>
-                    <TableHead className="hidden xl:table-cell">Data Registrazione</TableHead>
-                    <TableHead className="hidden xl:table-cell">Ultimo Accesso</TableHead>
+                    <TableHead>Scadenza</TableHead>
+                    <TableHead>Tot. Pagato</TableHead>
+                    <TableHead>Saldo</TableHead>
+                    <TableHead>Notifiche</TableHead>
+                    <TableHead>WhatsApp</TableHead>
+                    <TableHead>Data Reg.</TableHead>
+                    <TableHead>Ultimo Accesso</TableHead>
                     <TableHead className="text-right sticky right-0 bg-background z-10">Azioni</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -237,17 +259,17 @@ export default function AdminUsers() {
                       <TableCell><PlanBadge plan={u.plan} /></TableCell>
                       <TableCell><ProviderBadge provider={(u.billingProvider as BillingProvider) || 'mock'} /></TableCell>
                       <TableCell><StatusBadge status={u.subscriptionStatus} /></TableCell>
-                      <TableCell className="text-xs hidden md:table-cell">{fmtDate(u.subscriptionEnd)}</TableCell>
-                      <TableCell className="text-xs font-mono hidden md:table-cell">€{u.totalPaid.toFixed(2)}</TableCell>
-                      <TableCell className="text-xs font-mono hidden lg:table-cell">€{u.balance.toFixed(2)}</TableCell>
-                      <TableCell className="hidden lg:table-cell">
+                      <TableCell className="text-xs">{fmtDate(u.subscriptionEnd)}</TableCell>
+                      <TableCell className="text-xs font-mono">€{u.totalPaid.toFixed(2)}</TableCell>
+                      <TableCell className="text-xs font-mono">€{u.balance.toFixed(2)}</TableCell>
+                      <TableCell>
                         <Switch checked={u.notifications} onCheckedChange={() => toggleNotifications(u.id)} />
                       </TableCell>
-                      <TableCell className="hidden xl:table-cell text-xs">
+                      <TableCell className="text-xs">
                         {u.whatsapp ? <span className="flex items-center gap-1">📞 {u.whatsapp}</span> : '—'}
                       </TableCell>
-                      <TableCell className="hidden xl:table-cell text-xs">{fmtDate(u.registeredAt)}</TableCell>
-                      <TableCell className="hidden xl:table-cell text-xs">{fmtDate(u.lastAccess)}</TableCell>
+                      <TableCell className="text-xs">{fmtDate(u.registeredAt)}</TableCell>
+                      <TableCell className="text-xs">{fmtDate(u.lastAccess)}</TableCell>
                       <TableCell className="text-right sticky right-0 bg-background z-10">
                         <div className="flex items-center justify-end gap-1">
                           <Button variant="outline" size="sm" onClick={() => openEdit(u)} className="text-xs h-7 px-2">Modifica</Button>
@@ -410,5 +432,28 @@ function SummaryCard({ label, value, icon, highlight }: { label: string; value: 
         <p className={`text-lg font-bold ${highlight ? 'text-primary' : ''}`}>{value}</p>
       </CardContent>
     </Card>
+  );
+}
+
+function AppRevenueCard({ name, domain, amount, users, color }: { name: string; domain: string; amount: number; users: number; color: string }) {
+  const colorMap: Record<string, string> = {
+    green: 'border-green-200 bg-green-50',
+    blue: 'border-blue-200 bg-blue-50',
+    orange: 'border-orange-200 bg-orange-50',
+    purple: 'border-purple-200 bg-purple-50',
+  };
+  const textMap: Record<string, string> = {
+    green: 'text-green-700',
+    blue: 'text-blue-700',
+    orange: 'text-orange-700',
+    purple: 'text-purple-700',
+  };
+  return (
+    <div className={`rounded-lg border p-3 ${colorMap[color]}`}>
+      <p className={`font-semibold text-sm ${textMap[color]}`}>{name}</p>
+      <p className="text-xs text-muted-foreground mb-2">{domain}</p>
+      <p className={`text-xl font-bold font-mono ${textMap[color]}`}>€{amount.toFixed(2)}</p>
+      <p className="text-xs text-muted-foreground">{users} utenti</p>
+    </div>
   );
 }
