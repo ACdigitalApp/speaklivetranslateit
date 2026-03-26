@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo } from 'react';
+import { useState, useCallback, useMemo, useEffect } from 'react';
 import { Plus, RefreshCw, Key, Trash2, Search, DollarSign, TrendingUp, Users as UsersIcon, CreditCard, Globe, Smartphone, BarChart3 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -36,11 +36,25 @@ function ProviderBadge({ provider }: { provider: BillingProvider }) {
   );
 }
 
+// URL API altre app ACdigitalApp
+const CROSS_APP_APIS = {
+  gestionepassword: 'https://gestione-password-backend.up.railway.app/api/admin/revenue',
+  librifree: 'https://librifree-backend.up.railway.app/api/admin/revenue',
+  gestionescadenze: 'https://gestionescadenze-backend.up.railway.app/api/admin/revenue',
+};
+
+type AppRevenue = { amount: number; users: number; loading: boolean };
+
 export default function AdminUsers() {
   const currentUser = useAuthStore(s => s.currentUser);
   const { toast } = useToast();
   const [users, setUsers] = useState<AppUser[]>(getMockUsers());
   const [refreshing, setRefreshing] = useState(false);
+  const [crossApp, setCrossApp] = useState<Record<string, AppRevenue>>({
+    gestionepassword: { amount: 0, users: 0, loading: true },
+    librifree: { amount: 0, users: 0, loading: true },
+    gestionescadenze: { amount: 0, users: 0, loading: true },
+  });
   const [userFormOpen, setUserFormOpen] = useState(false);
   const [pwFormOpen, setPwFormOpen] = useState(false);
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
@@ -54,14 +68,33 @@ export default function AdminUsers() {
   const [filterPlan, setFilterPlan] = useState<string>('all');
   const [filterStatus, setFilterStatus] = useState<string>('all');
 
+  // Carica incassi altre app all'avvio
+  const fetchCrossAppRevenue = useCallback(async () => {
+    const apps = Object.keys(CROSS_APP_APIS) as (keyof typeof CROSS_APP_APIS)[];
+    for (const app of apps) {
+      try {
+        const res = await fetch(CROSS_APP_APIS[app], { signal: AbortSignal.timeout(5000) });
+        if (res.ok) {
+          const data = await res.json();
+          setCrossApp(prev => ({ ...prev, [app]: { amount: data.total_revenue || 0, users: data.total_users || 0, loading: false } }));
+        } else throw new Error('non-ok');
+      } catch {
+        setCrossApp(prev => ({ ...prev, [app]: { amount: 0, users: 0, loading: false } }));
+      }
+    }
+  }, []);
+
+  useEffect(() => { fetchCrossAppRevenue(); }, [fetchCrossAppRevenue]);
+
   const handleRefresh = useCallback(() => {
     setRefreshing(true);
+    fetchCrossAppRevenue();
     setTimeout(() => {
       setUsers(getMockUsers());
       setRefreshing(false);
       toast({ title: '✅ Lista aggiornata', description: `${getMockUsers().length} utenti caricati` });
     }, 600);
-  }, [toast]);
+  }, [toast, fetchCrossAppRevenue]);
 
   const revenue = useMemo(() => {
     const now = new Date();
@@ -181,14 +214,14 @@ export default function AdminUsers() {
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
-              <AppRevenueCard name="SpeakEasy Translator" domain="speaklivetranslate.it" amount={revenue.totalRevenue} users={users.length} color="green" />
-              <AppRevenueCard name="Gestione Password" domain="gestionepassword.it" amount={73.96} users={7} color="blue" />
-              <AppRevenueCard name="Librifree" domain="librifree.it" amount={0} users={0} color="orange" />
-              <AppRevenueCard name="Gestione Scadenze" domain="gestionescadenze.app" amount={0} users={0} color="purple" />
+              <AppRevenueCard name="SpeakEasy Translator" domain="speaklivetranslate.it" amount={revenue.totalRevenue} users={users.length} color="green" loading={false} />
+              <AppRevenueCard name="Gestione Password" domain="gestionepassword.it" amount={crossApp.gestionepassword.amount} users={crossApp.gestionepassword.users} color="blue" loading={crossApp.gestionepassword.loading} />
+              <AppRevenueCard name="Librifree" domain="librifree.it" amount={crossApp.librifree.amount} users={crossApp.librifree.users} color="orange" loading={crossApp.librifree.loading} />
+              <AppRevenueCard name="Gestione Scadenze" domain="gestionescadenze.app" amount={crossApp.gestionescadenze.amount} users={crossApp.gestionescadenze.users} color="purple" loading={crossApp.gestionescadenze.loading} />
             </div>
             <div className="flex items-center justify-between bg-primary text-primary-foreground rounded-lg px-4 py-3">
               <span className="font-bold text-sm">💰 TOTALE GENERALE ACdigitalApp</span>
-              <span className="font-bold text-lg font-mono">€{(revenue.totalRevenue + 73.96).toFixed(2)}</span>
+              <span className="font-bold text-lg font-mono">€{(revenue.totalRevenue + crossApp.gestionepassword.amount + crossApp.librifree.amount + crossApp.gestionescadenze.amount).toFixed(2)}</span>
             </div>
           </CardContent>
         </Card>
@@ -435,7 +468,7 @@ function SummaryCard({ label, value, icon, highlight }: { label: string; value: 
   );
 }
 
-function AppRevenueCard({ name, domain, amount, users, color }: { name: string; domain: string; amount: number; users: number; color: string }) {
+function AppRevenueCard({ name, domain, amount, users, color, loading }: { name: string; domain: string; amount: number; users: number; color: string; loading: boolean }) {
   const colorMap: Record<string, string> = {
     green: 'border-green-200 bg-green-50',
     blue: 'border-blue-200 bg-blue-50',
@@ -452,8 +485,17 @@ function AppRevenueCard({ name, domain, amount, users, color }: { name: string; 
     <div className={`rounded-lg border p-3 ${colorMap[color]}`}>
       <p className={`font-semibold text-sm ${textMap[color]}`}>{name}</p>
       <p className="text-xs text-muted-foreground mb-2">{domain}</p>
-      <p className={`text-xl font-bold font-mono ${textMap[color]}`}>€{amount.toFixed(2)}</p>
-      <p className="text-xs text-muted-foreground">{users} utenti</p>
+      {loading ? (
+        <div className="flex items-center gap-2 py-1">
+          <div className={`w-3 h-3 border-2 border-t-transparent rounded-full animate-spin ${textMap[color].replace('text-', 'border-')}`} />
+          <span className="text-xs text-muted-foreground">Caricamento...</span>
+        </div>
+      ) : (
+        <>
+          <p className={`text-xl font-bold font-mono ${textMap[color]}`}>€{amount.toFixed(2)}</p>
+          <p className="text-xs text-muted-foreground">{users} utenti</p>
+        </>
+      )}
     </div>
   );
 }
