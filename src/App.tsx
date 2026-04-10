@@ -721,34 +721,10 @@ function App() {
       <div className="mx-auto flex min-h-screen w-full max-w-md flex-col px-4 pb-6 pt-4 sm:max-w-lg">
         <header className="mb-4 rounded-[24px] border border-[#D7E3DA] bg-white/55 px-4 py-4 shadow-[0_8px_24px_rgba(22,42,28,0.08)] backdrop-blur-sm">
           <div className="flex items-start justify-between gap-3">
-            <div className="w-[132px] shrink-0">
-              <div className="flex flex-col items-center text-[#1C6B3B]">
-                <div
-                  className="select-none text-[30px] leading-none italic tracking-[-0.03em]"
-                  style={{
-                    fontFamily:
-                      '"Brush Script MT","Segoe Script","Apple Chancery","Snell Roundhand",cursive',
-                    fontWeight: 400,
-                  }}
-                >
-                  ACaridi
-                </div>
-
-                <div className="mt-1 text-center text-[9px] font-medium uppercase tracking-[0.34em] text-[#2E4B38]">
-                  Digital App
-                </div>
-
-                <div
-                  className="mt-1 text-center text-[14px] italic leading-none text-[#1C6B3B]"
-                  style={{
-                    fontFamily:
-                      '"Times New Roman",Georgia,"Palatino Linotype",serif',
-                    fontWeight: 400,
-                  }}
-                >
-                  Since 2026
-                </div>
-              </div>
+            <div className="shrink-0">
+              <span className="text-sm italic font-medium tracking-wide" style={{ color: '#2D6A4F' }}>
+                by AC Digital App
+              </span>
             </div>
 
             <div className="grid shrink-0 grid-cols-4 gap-2">
