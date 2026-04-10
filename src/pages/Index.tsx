@@ -144,14 +144,15 @@ export default function Index() {
       </div>
 
       {/* MICROPHONE */}
-      <div className="px-8 pt-2 pb-4 safe-bottom flex flex-col items-center">
-        <ListeningIndicator onToggle={handleToggle} />
-      </div>
-
       {/* Social proof */}
-      <p className="text-center text-xs font-medium pb-4 safe-bottom tracking-wide" style={{ color: '#2D6A4F' }}>
+      <p className="text-center text-xs font-medium py-2 tracking-wide" style={{ color: '#2D6A4F' }}>
         Over 1,200 visits
       </p>
+
+      {/* MICROPHONE */}
+      <div className="px-8 pt-2 pb-6 safe-bottom flex flex-col items-center">
+        <ListeningIndicator onToggle={handleToggle} />
+      </div>
 
       <SettingsModal />
     </div>
