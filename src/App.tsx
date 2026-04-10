@@ -1004,7 +1004,12 @@ function App() {
               Enter to send · Ctrl/Cmd+Enter send · Shift+Enter new line
             </p>
 
-            <div className="mt-6 flex flex-col items-center justify-center">
+            {/* Social proof */}
+            <p className="text-center text-xs font-medium mt-3 mb-1 tracking-wide" style={{ color: '#2D6A4F' }}>
+              Over 1,200 visits
+            </p>
+
+            <div className="mt-4 flex flex-col items-center justify-center">
               <div className="relative flex items-center justify-center gap-6">
                 {/* Audio level ring on mic button */}
                 {status === "listening" && audioLevel > 0.05 && (
