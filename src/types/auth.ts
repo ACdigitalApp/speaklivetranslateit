@@ -2,8 +2,8 @@ import type { BillingProvider } from './billing';
 
 export type UserRole = 'admin' | 'user_pro' | 'user';
 
-export type PlanType = 'free' | 'trial' | 'premium_monthly' | 'premium_yearly';
-export type SubscriptionStatus = 'active' | 'in_trial' | 'expired' | 'cancelled';
+export type PlanType = 'free' | 'trial' | 'premium' | 'pro' | 'monthly' | 'yearly' | 'premium_monthly' | 'premium_yearly';
+export type SubscriptionStatus = 'active' | 'inactive' | 'trialing' | 'in_trial' | 'canceled' | 'cancelled' | 'expired';
 
 export type AppUser = {
   id: string;

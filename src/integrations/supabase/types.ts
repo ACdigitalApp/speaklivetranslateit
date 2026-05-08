@@ -32,16 +32,217 @@ export type Database = {
         }
         Relationships: []
       }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          balance: number
+          billing_provider: Database["public"]["Enums"]["admin_billing_provider"]
+          created_at: string
+          deleted_at: string | null
+          email: string
+          id: string
+          last_access: string
+          name: string
+          next_billing_date: string | null
+          notifications: boolean
+          phone: string | null
+          plan: Database["public"]["Enums"]["admin_plan_type"]
+          registered_at: string
+          subscription_end: string | null
+          subscription_start: string | null
+          subscription_status: Database["public"]["Enums"]["admin_subscription_status"]
+          total_paid: number
+          trial_end: string | null
+          trial_start: string | null
+          updated_at: string
+          user_id: string | null
+          whatsapp: string | null
+        }
+        Insert: {
+          avatar_url?: string | null
+          balance?: number
+          billing_provider?: Database["public"]["Enums"]["admin_billing_provider"]
+          created_at?: string
+          deleted_at?: string | null
+          email: string
+          id?: string
+          last_access?: string
+          name?: string
+          next_billing_date?: string | null
+          notifications?: boolean
+          phone?: string | null
+          plan?: Database["public"]["Enums"]["admin_plan_type"]
+          registered_at?: string
+          subscription_end?: string | null
+          subscription_start?: string | null
+          subscription_status?: Database["public"]["Enums"]["admin_subscription_status"]
+          total_paid?: number
+          trial_end?: string | null
+          trial_start?: string | null
+          updated_at?: string
+          user_id?: string | null
+          whatsapp?: string | null
+        }
+        Update: {
+          avatar_url?: string | null
+          balance?: number
+          billing_provider?: Database["public"]["Enums"]["admin_billing_provider"]
+          created_at?: string
+          deleted_at?: string | null
+          email?: string
+          id?: string
+          last_access?: string
+          name?: string
+          next_billing_date?: string | null
+          notifications?: boolean
+          phone?: string | null
+          plan?: Database["public"]["Enums"]["admin_plan_type"]
+          registered_at?: string
+          subscription_end?: string | null
+          subscription_start?: string | null
+          subscription_status?: Database["public"]["Enums"]["admin_subscription_status"]
+          total_paid?: number
+          trial_end?: string | null
+          trial_start?: string | null
+          updated_at?: string
+          user_id?: string | null
+          whatsapp?: string | null
+        }
+        Relationships: []
+      }
+      user_payment_transactions: {
+        Row: {
+          amount: number
+          created_at: string
+          description: string
+          id: string
+          plan_type: Database["public"]["Enums"]["admin_plan_type"]
+          reference: string
+          status: string
+          transaction_date: string
+          user_id: string
+        }
+        Insert: {
+          amount?: number
+          created_at?: string
+          description?: string
+          id?: string
+          plan_type?: Database["public"]["Enums"]["admin_plan_type"]
+          reference?: string
+          status?: string
+          transaction_date?: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          description?: string
+          id?: string
+          plan_type?: Database["public"]["Enums"]["admin_plan_type"]
+          reference?: string
+          status?: string
+          transaction_date?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_payment_transactions_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_roles: {
+        Row: {
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_roles_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
+      admin_update_profile: {
+        Args: {
+          p_balance: number
+          p_billing_provider: string
+          p_email: string
+          p_name: string
+          p_notifications: boolean
+          p_phone: string
+          p_plan: string
+          p_subscription_end: string
+          p_subscription_status: string
+          p_total_paid: number
+          p_user_id: string
+          p_whatsapp: string
+        }
+        Returns: Json
+      }
+      current_admin_profile_id: { Args: never; Returns: string }
+      delete_user: { Args: { p_user_id: string }; Returns: Json }
+      get_all_users_for_admin: { Args: never; Returns: Json }
       get_app_visit_count: { Args: { p_app_key: string }; Returns: number }
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
       increment_app_visit: { Args: { p_app_key: string }; Returns: number }
+      remove_user: { Args: { p_user_id: string }; Returns: Json }
+      update_user_role: {
+        Args: { p_role: string; p_user_id: string }
+        Returns: Json
+      }
     }
     Enums: {
-      [_ in never]: never
+      admin_billing_provider: "mock" | "stripe" | "apple" | "googleplay"
+      admin_plan_type:
+        | "free"
+        | "trial"
+        | "premium"
+        | "pro"
+        | "monthly"
+        | "yearly"
+        | "premium_monthly"
+        | "premium_yearly"
+      admin_subscription_status:
+        | "active"
+        | "inactive"
+        | "trialing"
+        | "in_trial"
+        | "canceled"
+        | "cancelled"
+        | "expired"
+      app_role: "admin" | "user_pro" | "user"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -168,6 +369,28 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      admin_billing_provider: ["mock", "stripe", "apple", "googleplay"],
+      admin_plan_type: [
+        "free",
+        "trial",
+        "premium",
+        "pro",
+        "monthly",
+        "yearly",
+        "premium_monthly",
+        "premium_yearly",
+      ],
+      admin_subscription_status: [
+        "active",
+        "inactive",
+        "trialing",
+        "in_trial",
+        "canceled",
+        "cancelled",
+        "expired",
+      ],
+      app_role: ["admin", "user_pro", "user"],
+    },
   },
 } as const
