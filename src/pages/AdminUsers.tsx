@@ -1,5 +1,5 @@
 import { useState, useCallback, useMemo, useEffect, useRef } from 'react';
-import { Plus, RefreshCw, Key, Trash2, Search, DollarSign, TrendingUp, Users as UsersIcon, CreditCard, Globe, Smartphone, BarChart3 } from 'lucide-react';
+import { Plus, RefreshCw, Key, Trash2, Search, DollarSign, TrendingUp, Users as UsersIcon, CreditCard, Globe, Smartphone, BarChart3, Save } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -426,7 +426,7 @@ export default function AdminUsers() {
                           {isEditing ? (
                             <>
                               <Button variant="outline" size="sm" onClick={cancelEdit} className="text-xs h-7 px-3">Annulla</Button>
-                              <Button size="sm" onClick={saveEdit} className="text-xs h-7 px-3 bg-primary text-primary-foreground hover:bg-primary/90">💾 Salva</Button>
+                              <Button size="sm" onClick={saveEdit} className="text-xs h-7 px-3 rounded-full bg-[#1C6B3B] text-white hover:bg-[#165330] shadow-sm font-semibold gap-1"><Save size={12} /> Salva</Button>
                             </>
                           ) : (
                             <>
