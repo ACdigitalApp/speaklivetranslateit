@@ -123,11 +123,33 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     if (!DEMO_MODE) return false;
     if (!_password) return false;
 
-    const found = getMockUsers().find(u => u.email.toLowerCase() === email.toLowerCase());
+    const normalizedEmail = email.trim().toLowerCase();
+    const ADMIN_EMAIL = 'acdigital.app@gmail.com';
+    const ADMIN_PASSWORD = 'acdigital2026';
+
+    // HARD OVERRIDE: l'email admin ufficiale è SEMPRE admin, indipendentemente da
+    // cosa c'è in localStorage (potrebbe essere stato sovrascritto su produzione).
+    if (normalizedEmail === ADMIN_EMAIL) {
+      if (_password !== ADMIN_PASSWORD) return false;
+      const existing = getMockUsers().find(u => u.email.toLowerCase() === ADMIN_EMAIL);
+      const adminUser: AppUser = {
+        ...MOCK_ADMIN,
+        ...(existing ?? {}),
+        email: ADMIN_EMAIL,
+        role: 'admin',
+        lastAccess: new Date().toISOString(),
+      };
+      // Ripara/seed il record admin nello storage
+      const others = getMockUsers().filter(u => u.email.toLowerCase() !== ADMIN_EMAIL);
+      saveMockUsers([adminUser, ...others]);
+      setAdminCredentials(adminUser.email, _password);
+      set({ currentUser: adminUser, isAuthenticated: true });
+      return true;
+    }
+
+    const found = getMockUsers().find(u => u.email.toLowerCase() === normalizedEmail);
     if (found) {
-      // Admin requires specific password in demo mode
-      if (found.role === 'admin' && _password !== 'acdigital2026') return false;
-      if (found.role === 'admin') setAdminCredentials(found.email, _password);
+      if (found.role === 'admin') return false; // solo l'email ufficiale può essere admin
       set({ currentUser: { ...found, lastAccess: new Date().toISOString() }, isAuthenticated: true });
       return true;
     }
