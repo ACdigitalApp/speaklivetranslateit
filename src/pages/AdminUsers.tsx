@@ -257,8 +257,10 @@ export default function AdminUsers() {
                 onClick={() => {
                   if (editingId) {
                     saveEdit();
+                  } else if (hasPendingChanges) {
+                    persistUsers(users);
                   } else {
-                    toast({ title: '✅ Modifiche salvate', description: 'Tutte le modifiche sono state applicate' });
+                    toast({ title: 'Nessuna modifica da salvare' });
                   }
                 }}
                 className="rounded-full bg-[#1C6B3B] text-white hover:bg-[#165330] shadow-sm font-semibold gap-1"
