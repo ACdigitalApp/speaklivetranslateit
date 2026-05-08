@@ -80,6 +80,8 @@ Deno.serve(async (req) => {
       return json({ error: 'Accesso non autorizzato' }, 401);
     }
 
+    console.log('[admin-users] resolved email:', email);
+
     const { data: adminProfile, error: adminError } = await adminClient
       .from('profiles')
       .select('id, email, deleted_at')
@@ -87,8 +89,10 @@ Deno.serve(async (req) => {
       .is('deleted_at', null)
       .maybeSingle();
 
+    console.log('[admin-users] profile lookup:', { adminProfile, adminError });
+
     if (adminError) throw adminError;
-    if (!adminProfile) return json({ error: 'Solo un amministratore può gestire gli utenti' }, 403);
+    if (!adminProfile) return json({ error: 'Solo un amministratore può gestire gli utenti (profilo non trovato)' }, 403);
 
     const { data: roleRow, error: roleLookupError } = await adminClient
       .from('user_roles')
@@ -96,6 +100,8 @@ Deno.serve(async (req) => {
       .eq('user_id', adminProfile.id)
       .eq('role', 'admin')
       .maybeSingle();
+
+    console.log('[admin-users] role lookup:', { roleRow, roleLookupError });
 
     if (roleLookupError) throw roleLookupError;
     if (!roleRow) return json({ error: 'Solo un amministratore può gestire gli utenti' }, 403);
