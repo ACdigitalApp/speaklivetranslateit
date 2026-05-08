@@ -122,7 +122,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     if (!DEMO_MODE) return false;
     if (!_password) return false;
 
-    const found = MOCK_USERS.find(u => u.email.toLowerCase() === email.toLowerCase());
+    const found = getMockUsers().find(u => u.email.toLowerCase() === email.toLowerCase());
     if (found) {
       // Admin requires specific password in demo mode
       if (found.role === 'admin' && _password !== 'acdigital2026') return false;
@@ -143,6 +143,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       balance: 0,
       transactions: [],
     };
+    saveMockUsers([...getMockUsers(), newUser]);
     set({ currentUser: newUser, isAuthenticated: true });
     return true;
   },
@@ -163,6 +164,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       balance: 0,
       transactions: [],
     };
+    saveMockUsers([...getMockUsers(), newUser]);
     set({ currentUser: newUser, isAuthenticated: true });
     return true;
   },
