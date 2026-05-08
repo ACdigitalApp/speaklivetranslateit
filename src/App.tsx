@@ -804,10 +804,15 @@ function App() {
               {currentUser?.role === 'admin' && (
                 <button
                   onClick={() => navigate("/admin/users")}
-                  className="flex flex-1 min-w-[160px] items-center justify-center gap-2 rounded-[18px] border border-[#1C6B3B] bg-[#1C6B3B] px-4 py-3.5 text-[15px] font-semibold text-white shadow-[0_4px_12px_rgba(22,42,28,0.15)] transition hover:bg-[#155a30] active:scale-[0.98]"
+                  aria-current={isAdminRoute ? 'page' : undefined}
+                  className={
+                    isAdminRoute
+                      ? "flex flex-1 min-w-[160px] items-center justify-center gap-2 rounded-[18px] border-2 border-[#1C6B3B] bg-[#1C6B3B] px-4 py-3.5 text-[15px] font-semibold text-white shadow-[0_6px_16px_rgba(28,107,59,0.35)] ring-2 ring-[#1C6B3B]/30 ring-offset-2 ring-offset-white transition active:scale-[0.98]"
+                      : "flex flex-1 min-w-[160px] items-center justify-center gap-2 rounded-[18px] border border-[#1C6B3B] bg-[#1C6B3B] px-4 py-3.5 text-[15px] font-semibold text-white shadow-[0_4px_12px_rgba(22,42,28,0.15)] transition hover:bg-[#155a30] active:scale-[0.98]"
+                  }
                 >
                   <Shield className="h-5 w-5" />
-                  Pannello Admin
+                  {isAdminRoute ? 'Gestione Utenti' : 'Pannello Admin'}
                 </button>
               )}
             </>
