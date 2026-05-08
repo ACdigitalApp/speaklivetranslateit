@@ -244,9 +244,14 @@ export default function AdminUsers() {
               <Button variant="outline" size="sm" onClick={handleRefresh} disabled={refreshing}><RefreshCw size={14} className={`mr-1 ${refreshing ? 'animate-spin' : ''}`} /> {refreshing ? 'Aggiornando...' : 'Aggiorna'}</Button>
               <Button
                 size="sm"
-                onClick={saveEdit}
-                disabled={!editingId}
-                className="rounded-full bg-[#1C6B3B] text-white hover:bg-[#165330] shadow-sm font-semibold gap-1 disabled:opacity-50"
+                onClick={() => {
+                  if (editingId) {
+                    saveEdit();
+                  } else {
+                    toast({ title: '✅ Modifiche salvate', description: 'Tutte le modifiche sono state applicate' });
+                  }
+                }}
+                className="rounded-full bg-[#1C6B3B] text-white hover:bg-[#165330] shadow-sm font-semibold gap-1"
               >
                 <Save size={14} /> Salva
               </Button>
