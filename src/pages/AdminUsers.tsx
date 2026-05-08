@@ -17,8 +17,35 @@ import { PlanBadge, StatusBadge } from '@/components/subscription/PlanBadge';
 import { useAuthStore, getMockUsers } from '@/store/useAuthStore';
 import { getProviderLabel } from '@/config/subscriptions';
 import { useToast } from '@/hooks/use-toast';
-import type { AppUser, UserRole } from '@/types/auth';
+import type { AppUser, UserRole, PlanType, SubscriptionStatus } from '@/types/auth';
 import type { BillingProvider } from '@/types/billing';
+
+const PLAN_OPTIONS: { value: PlanType; label: string }[] = [
+  { value: 'free', label: 'Free' },
+  { value: 'trial', label: 'Trial' },
+  { value: 'premium_monthly', label: 'Premium Monthly' },
+  { value: 'premium_yearly', label: 'Premium Yearly' },
+];
+
+const STATUS_OPTIONS: { value: SubscriptionStatus; label: string }[] = [
+  { value: 'active', label: 'Attivo' },
+  { value: 'in_trial', label: 'In Trial' },
+  { value: 'expired', label: 'Scaduto' },
+  { value: 'cancelled', label: 'Annullato' },
+];
+
+const PROVIDER_OPTIONS: { value: BillingProvider; label: string }[] = [
+  { value: 'mock', label: 'Demo' },
+  { value: 'stripe', label: 'Stripe' },
+  { value: 'apple', label: 'Apple' },
+  { value: 'googleplay', label: 'Google Play' },
+];
+
+const ROLE_OPTIONS: { value: UserRole; label: string }[] = [
+  { value: 'user', label: 'User' },
+  { value: 'user_pro', label: 'User Pro' },
+  { value: 'admin', label: 'Admin' },
+];
 
 const PROVIDER_COLORS: Record<BillingProvider, string> = {
   mock: 'bg-muted text-muted-foreground',
