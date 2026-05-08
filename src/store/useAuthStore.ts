@@ -16,7 +16,7 @@ type AuthState = {
 
 const MOCK_ADMIN: AppUser = {
   id: '1',
-  name: 'Admin ACaridi',
+  name: 'Antonio Caridi',
   email: 'acdigital.app@gmail.com',
   role: 'admin',
   whatsapp: '+39 333 1234567',
@@ -95,7 +95,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     const found = MOCK_USERS.find(u => u.email.toLowerCase() === email.toLowerCase());
     if (found) {
       // Admin requires specific password in demo mode
-      if (found.role === 'admin' && _password !== 'Admin2026!') return false;
+      if (found.role === 'admin' && _password !== 'acdigital2026') return false;
       set({ currentUser: { ...found, lastAccess: new Date().toISOString() }, isAuthenticated: true });
       return true;
     }
