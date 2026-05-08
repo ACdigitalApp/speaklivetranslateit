@@ -224,9 +224,9 @@ export default function AdminUsers() {
 
   const handleDelete = () => {
     if (selectedUser) {
-      setUsers(prev => prev.filter(u => u.id !== selectedUser.id));
-      setHasPendingChanges(true);
-      toast({ title: 'Utente rimosso', description: 'Premi Salva per confermare la modifica' });
+      const next = users.filter(u => u.id !== selectedUser.id);
+      persistUsers(next);
+      toast({ title: 'Utente eliminato', description: `${selectedUser.name || selectedUser.email} è stato rimosso correttamente.` });
     }
     setDeleteConfirmOpen(false);
     setSelectedUser(null);
