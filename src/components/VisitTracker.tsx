@@ -48,7 +48,7 @@ export function VisitTracker() {
         console.warn('[VisitTracker] increment failed:', error.message);
       }
     });
-  }, [location.pathname]);
+  }, [location.pathname, currentUser?.role, currentUser?.email]);
 
   return null;
 }
