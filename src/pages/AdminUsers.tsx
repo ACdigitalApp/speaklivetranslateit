@@ -99,7 +99,7 @@ export default function AdminUsers() {
   const [filterPlan, setFilterPlan] = useState<string>('all');
   const [filterStatus, setFilterStatus] = useState<string>('all');
   const visitsRef = useRef<VisitsTotalCardHandle>(null);
-  const [hasPendingChanges, setHasPendingChanges] = useState(false);
+  const [, setHasPendingChanges] = useState(false);
 
   // Carica incassi altre app all'avvio
   const fetchCrossAppRevenue = useCallback(async () => {
