@@ -14,7 +14,7 @@ import { PageHeader } from '@/components/layout/PageHeader';
 import { VisitsTotalCard, type VisitsTotalCardHandle } from '@/components/admin/VisitsTotalCard';
 import { RoleBadge } from '@/components/auth/RoleBadge';
 import { PlanBadge, StatusBadge } from '@/components/subscription/PlanBadge';
-import { useAuthStore, getMockUsers } from '@/store/useAuthStore';
+import { useAuthStore, getMockUsers, saveMockUsers } from '@/store/useAuthStore';
 import { getProviderLabel } from '@/config/subscriptions';
 import { useToast } from '@/hooks/use-toast';
 import type { AppUser, UserRole, PlanType, SubscriptionStatus } from '@/types/auth';
@@ -120,11 +120,10 @@ export default function AdminUsers() {
   const [draft, setDraft] = useState<AppUser | null>(null);
 
   const persistUsers = (nextUsers: AppUser[]) => {
-    const all = getMockUsers();
-    all.splice(0, all.length, ...nextUsers);
-    setUsers([...all]);
+    const saved = saveMockUsers(nextUsers);
+    setUsers([...saved]);
     setHasPendingChanges(false);
-    toast({ title: '✅ Modifiche salvate', description: 'Le modifiche agli utenti sono state applicate' });
+    toast({ title: '✅ Modifiche salvate', description: 'La tabella utenti è stata aggiornata correttamente.' });
   };
 
   const startEdit = (u: AppUser) => {
@@ -215,9 +214,9 @@ export default function AdminUsers() {
         transactions: [],
         billingProvider: 'mock',
       };
-      setUsers(prev => [...prev, newUser]);
+      persistUsers([...users, newUser]);
     } else if (selectedUser) {
-      setUsers(prev => prev.map(u => u.id === selectedUser.id ? { ...u, name: form.name, email: form.email, role: form.role, whatsapp: form.whatsapp || undefined } : u));
+      persistUsers(users.map(u => u.id === selectedUser.id ? { ...u, name: form.name, email: form.email, role: form.role, whatsapp: form.whatsapp || undefined } : u));
     }
     setUserFormOpen(false);
   };
@@ -233,7 +232,7 @@ export default function AdminUsers() {
   };
 
   const toggleNotifications = (userId: string) => {
-    setUsers(prev => prev.map(u => u.id === userId ? { ...u, notifications: !u.notifications } : u));
+    persistUsers(users.map(u => u.id === userId ? { ...u, notifications: !u.notifications } : u));
   };
 
   const fmtDate = (d?: string) => {
