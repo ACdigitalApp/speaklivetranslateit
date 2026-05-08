@@ -426,7 +426,7 @@ export default function AdminUsers() {
                           {isEditing ? (
                             <>
                               <Button variant="outline" size="sm" onClick={cancelEdit} className="text-xs h-7 px-3">Annulla</Button>
-                              <Button size="sm" onClick={saveEdit} className="text-xs h-7 px-3 bg-primary text-primary-foreground hover:bg-primary/90">💾 Salva</Button>
+                              <Button size="sm" onClick={saveEdit} className="text-xs h-7 px-3 rounded-full bg-[#1C6B3B] text-white hover:bg-[#165330] shadow-sm font-semibold gap-1"><Save size={12} /> Salva</Button>
                             </>
                           ) : (
                             <>
