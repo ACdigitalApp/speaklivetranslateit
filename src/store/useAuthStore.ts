@@ -16,7 +16,7 @@ type AuthState = {
 
 const MOCK_ADMIN: AppUser = {
   id: '1',
-  name: 'Admin ACaridi',
+  name: 'Antonio Caridi',
   email: 'acdigital.app@gmail.com',
   role: 'admin',
   whatsapp: '+39 333 1234567',
