@@ -313,9 +313,7 @@ export default function AdminUsers() {
                 size="sm"
                 onClick={() => {
                   if (editingId) {
-                    saveEdit();
-                  } else if (hasPendingChanges) {
-                    persistUsers(users);
+                    void saveEdit();
                   } else {
                     toast({ title: 'Nessuna modifica da salvare' });
                   }
