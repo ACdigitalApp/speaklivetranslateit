@@ -11,14 +11,14 @@ import { useSubscriptionStore, PLAN_PRICES } from '@/store/useSubscriptionStore'
 import type { PlanType } from '@/types/auth';
 import { toast } from 'sonner';
 
-const planNames: Record<PlanType, string> = {
+const planNames: Partial<Record<PlanType, string>> = {
   free: 'Free',
   trial: 'Prova Gratuita 7 giorni',
   premium_monthly: 'Premium Monthly',
   premium_yearly: 'Premium Yearly',
 };
 
-const planDescriptions: Record<PlanType, string> = {
+const planDescriptions: Partial<Record<PlanType, string>> = {
   free: '',
   trial: 'Oggi non paghi nulla. La tua prova gratuita dura 7 giorni.',
   premium_monthly: 'Confermando, attivi SpeakLiveTranslate Premium Monthly a €7,99 al mese.',
