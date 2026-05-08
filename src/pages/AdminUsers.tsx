@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo, useEffect } from 'react';
+import { useState, useCallback, useMemo, useEffect, useRef } from 'react';
 import { Plus, RefreshCw, Key, Trash2, Search, DollarSign, TrendingUp, Users as UsersIcon, CreditCard, Globe, Smartphone, BarChart3 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -11,7 +11,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { PageHeader } from '@/components/layout/PageHeader';
-import { VisitsTotalCard } from '@/components/admin/VisitsTotalCard';
+import { VisitsTotalCard, type VisitsTotalCardHandle } from '@/components/admin/VisitsTotalCard';
 import { RoleBadge } from '@/components/auth/RoleBadge';
 import { PlanBadge, StatusBadge } from '@/components/subscription/PlanBadge';
 import { useAuthStore, getMockUsers } from '@/store/useAuthStore';
@@ -68,6 +68,7 @@ export default function AdminUsers() {
   const [searchQuery, setSearchQuery] = useState('');
   const [filterPlan, setFilterPlan] = useState<string>('all');
   const [filterStatus, setFilterStatus] = useState<string>('all');
+  const visitsRef = useRef<VisitsTotalCardHandle>(null);
 
   // Carica incassi altre app all'avvio
   const fetchCrossAppRevenue = useCallback(async () => {
@@ -90,6 +91,7 @@ export default function AdminUsers() {
   const handleRefresh = useCallback(() => {
     setRefreshing(true);
     fetchCrossAppRevenue();
+    visitsRef.current?.refresh();
     setTimeout(() => {
       setUsers(getMockUsers());
       setRefreshing(false);
@@ -197,7 +199,7 @@ export default function AdminUsers() {
         />
 
         {/* Visite Totali */}
-        <VisitsTotalCard />
+        <VisitsTotalCard ref={visitsRef} />
 
         {/* Revenue summary cards */}
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 mb-6">

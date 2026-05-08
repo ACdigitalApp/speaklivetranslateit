@@ -1,29 +1,24 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useImperativeHandle, forwardRef, useCallback } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
+import { supabase } from '@/integrations/supabase/client';
 
-const STORAGE_KEY = 'speak_translate_live_visit_count';
+const APP_KEY = 'speak_translate_live';
 
-export function getVisitCount(): number {
-  try {
-    return parseInt(localStorage.getItem(STORAGE_KEY) || '0', 10) || 0;
-  } catch {
-    return 0;
-  }
-}
+export type VisitsTotalCardHandle = { refresh: () => void };
 
-export function VisitsTotalCard() {
+export const VisitsTotalCard = forwardRef<VisitsTotalCardHandle>((_, ref) => {
   const [count, setCount] = useState<number>(0);
 
-  useEffect(() => {
-    setCount(getVisitCount());
-    const onStorage = (e: StorageEvent) => {
-      if (e.key === STORAGE_KEY) setCount(getVisitCount());
-    };
-    window.addEventListener('storage', onStorage);
-    return () => window.removeEventListener('storage', onStorage);
+  const load = useCallback(async () => {
+    const { data, error } = await supabase.rpc('get_app_visit_count', { p_app_key: APP_KEY });
+    if (!error && typeof data === 'number') setCount(data);
+    else if (!error && data != null) setCount(Number(data) || 0);
   }, []);
 
-  // Pad to 5 digits like the mockup
+  useEffect(() => { load(); }, [load]);
+
+  useImperativeHandle(ref, () => ({ refresh: load }), [load]);
+
   const digits = String(count).padStart(5, '0').split('');
 
   return (
@@ -43,4 +38,6 @@ export function VisitsTotalCard() {
       </CardContent>
     </Card>
   );
-}
+});
+
+VisitsTotalCard.displayName = 'VisitsTotalCard';
