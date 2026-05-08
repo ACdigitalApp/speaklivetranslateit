@@ -68,6 +68,7 @@ export default function AdminUsers() {
   const [searchQuery, setSearchQuery] = useState('');
   const [filterPlan, setFilterPlan] = useState<string>('all');
   const [filterStatus, setFilterStatus] = useState<string>('all');
+  const visitsRef = useRef<VisitsTotalCardHandle>(null);
 
   // Carica incassi altre app all'avvio
   const fetchCrossAppRevenue = useCallback(async () => {
