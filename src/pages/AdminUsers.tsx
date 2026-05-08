@@ -91,6 +91,7 @@ export default function AdminUsers() {
   const handleRefresh = useCallback(() => {
     setRefreshing(true);
     fetchCrossAppRevenue();
+    visitsRef.current?.refresh();
     setTimeout(() => {
       setUsers(getMockUsers());
       setRefreshing(false);
