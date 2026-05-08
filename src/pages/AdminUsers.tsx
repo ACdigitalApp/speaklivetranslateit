@@ -335,40 +335,112 @@ export default function AdminUsers() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {filteredUsers.map(u => (
-                    <TableRow key={u.id}>
+                  {filteredUsers.map(u => {
+                    const isEditing = editingId === u.id && draft;
+                    const d = draft as AppUser;
+                    return (
+                    <TableRow key={u.id} className={isEditing ? 'bg-primary/5' : ''}>
                       <TableCell className="font-medium text-sm">
-                        <span className="flex items-center gap-2">
-                          {u.name}
-                          {u.id === currentUser?.id && <Badge variant="outline" className="text-xs bg-primary/10 text-primary border-primary/30">Tu</Badge>}
-                        </span>
+                        {isEditing ? (
+                          <Input value={d.name} onChange={e => setDraft({ ...d, name: e.target.value })} className="h-8 text-sm" />
+                        ) : (
+                          <span className="flex items-center gap-2">
+                            {u.name}
+                            {u.id === currentUser?.id && <Badge variant="outline" className="text-xs bg-primary/10 text-primary border-primary/30">Tu</Badge>}
+                          </span>
+                        )}
                       </TableCell>
-                      <TableCell className="text-sm">{u.email}</TableCell>
-                      <TableCell><RoleBadge role={u.role} /></TableCell>
-                      <TableCell><PlanBadge plan={u.plan} /></TableCell>
-                      <TableCell><ProviderBadge provider={(u.billingProvider as BillingProvider) || 'mock'} /></TableCell>
-                      <TableCell><StatusBadge status={u.subscriptionStatus} /></TableCell>
-                      <TableCell className="text-xs">{fmtDate(u.subscriptionEnd)}</TableCell>
+                      <TableCell className="text-sm">
+                        {isEditing ? (
+                          <Input type="email" value={d.email} onChange={e => setDraft({ ...d, email: e.target.value })} className="h-8 text-sm" />
+                        ) : u.email}
+                      </TableCell>
+                      <TableCell>
+                        {isEditing ? (
+                          <Select value={d.role} onValueChange={v => setDraft({ ...d, role: v as UserRole })}>
+                            <SelectTrigger className="h-8 w-[110px] text-xs"><SelectValue /></SelectTrigger>
+                            <SelectContent>
+                              {ROLE_OPTIONS.map(o => <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>)}
+                            </SelectContent>
+                          </Select>
+                        ) : <RoleBadge role={u.role} />}
+                      </TableCell>
+                      <TableCell>
+                        {isEditing ? (
+                          <Select value={d.plan} onValueChange={v => setDraft({ ...d, plan: v as PlanType })}>
+                            <SelectTrigger className="h-8 w-[140px] text-xs"><SelectValue /></SelectTrigger>
+                            <SelectContent>
+                              {PLAN_OPTIONS.map(o => <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>)}
+                            </SelectContent>
+                          </Select>
+                        ) : <PlanBadge plan={u.plan} />}
+                      </TableCell>
+                      <TableCell>
+                        {isEditing ? (
+                          <Select value={d.billingProvider || 'mock'} onValueChange={v => setDraft({ ...d, billingProvider: v as BillingProvider })}>
+                            <SelectTrigger className="h-8 w-[110px] text-xs"><SelectValue /></SelectTrigger>
+                            <SelectContent>
+                              {PROVIDER_OPTIONS.map(o => <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>)}
+                            </SelectContent>
+                          </Select>
+                        ) : <ProviderBadge provider={(u.billingProvider as BillingProvider) || 'mock'} />}
+                      </TableCell>
+                      <TableCell>
+                        {isEditing ? (
+                          <Select value={d.subscriptionStatus} onValueChange={v => setDraft({ ...d, subscriptionStatus: v as SubscriptionStatus })}>
+                            <SelectTrigger className="h-8 w-[120px] text-xs"><SelectValue /></SelectTrigger>
+                            <SelectContent>
+                              {STATUS_OPTIONS.map(o => <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>)}
+                            </SelectContent>
+                          </Select>
+                        ) : <StatusBadge status={u.subscriptionStatus} />}
+                      </TableCell>
+                      <TableCell className="text-xs">
+                        {isEditing ? (
+                          <Input
+                            type="date"
+                            value={d.subscriptionEnd ? d.subscriptionEnd.slice(0, 10) : ''}
+                            onChange={e => setDraft({ ...d, subscriptionEnd: e.target.value ? new Date(e.target.value).toISOString() : undefined })}
+                            className="h-8 w-[140px] text-xs"
+                          />
+                        ) : fmtDate(u.subscriptionEnd)}
+                      </TableCell>
                       <TableCell className="text-xs font-mono">€{u.totalPaid.toFixed(2)}</TableCell>
                       <TableCell className="text-xs font-mono">€{u.balance.toFixed(2)}</TableCell>
                       <TableCell>
-                        <Switch checked={u.notifications} onCheckedChange={() => toggleNotifications(u.id)} />
+                        {isEditing ? (
+                          <Switch checked={d.notifications} onCheckedChange={v => setDraft({ ...d, notifications: v })} />
+                        ) : (
+                          <Switch checked={u.notifications} onCheckedChange={() => toggleNotifications(u.id)} />
+                        )}
                       </TableCell>
                       <TableCell className="text-xs">
-                        {u.whatsapp ? <span className="flex items-center gap-1">📞 {u.whatsapp}</span> : '—'}
+                        {isEditing ? (
+                          <Input value={d.whatsapp || ''} onChange={e => setDraft({ ...d, whatsapp: e.target.value })} placeholder="+39..." className="h-8 w-[140px] text-xs" />
+                        ) : (u.whatsapp ? <span className="flex items-center gap-1">📞 {u.whatsapp}</span> : '—')}
                       </TableCell>
                       <TableCell className="text-xs">{fmtDate(u.registeredAt)}</TableCell>
                       <TableCell className="text-xs">{fmtDate(u.lastAccess)}</TableCell>
                       <TableCell className="text-right sticky right-0 bg-background z-10">
                         <div className="flex items-center justify-end gap-1">
-                          <Button variant="outline" size="sm" onClick={() => openEdit(u)} className="text-xs h-7 px-2">Modifica</Button>
-                          <Button variant="outline" size="sm" onClick={() => { setSelectedUser(u); setPaymentDetailOpen(true); }} className="text-xs h-7 px-2">€</Button>
-                          <Button variant="outline" size="sm" onClick={() => { setSelectedUser(u); setPwFields({ next: '', confirm: '' }); setPwError(''); setPwFormOpen(true); }} className="text-xs h-7 px-2"><Key size={12} className="mr-1" />PW</Button>
-                          <Button variant="outline" size="sm" onClick={() => { setSelectedUser(u); setDeleteConfirmOpen(true); }} disabled={u.id === currentUser?.id || u.role === 'admin'} className="text-xs h-7 px-2 text-destructive border-destructive/30 hover:bg-destructive/10"><Trash2 size={12} className="mr-1" />Del</Button>
+                          {isEditing ? (
+                            <>
+                              <Button variant="outline" size="sm" onClick={cancelEdit} className="text-xs h-7 px-3">Annulla</Button>
+                              <Button size="sm" onClick={saveEdit} className="text-xs h-7 px-3 bg-primary text-primary-foreground hover:bg-primary/90">💾 Salva</Button>
+                            </>
+                          ) : (
+                            <>
+                              <Button variant="outline" size="sm" onClick={() => startEdit(u)} className="text-xs h-7 px-2">Modifica</Button>
+                              <Button variant="outline" size="sm" onClick={() => { setSelectedUser(u); setPaymentDetailOpen(true); }} className="text-xs h-7 px-2">€</Button>
+                              <Button variant="outline" size="sm" onClick={() => { setSelectedUser(u); setPwFields({ next: '', confirm: '' }); setPwError(''); setPwFormOpen(true); }} className="text-xs h-7 px-2"><Key size={12} className="mr-1" />PW</Button>
+                              <Button variant="outline" size="sm" onClick={() => { setSelectedUser(u); setDeleteConfirmOpen(true); }} disabled={u.id === currentUser?.id || u.role === 'admin'} className="text-xs h-7 px-2 text-destructive border-destructive/30 hover:bg-destructive/10"><Trash2 size={12} className="mr-1" />Del</Button>
+                            </>
+                          )}
                         </div>
                       </TableCell>
                     </TableRow>
-                  ))}
+                    );
+                  })}
                 </TableBody>
               </Table>
             </div>
