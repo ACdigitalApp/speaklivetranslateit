@@ -11,7 +11,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { PageHeader } from '@/components/layout/PageHeader';
-import { VisitsTotalCard } from '@/components/admin/VisitsTotalCard';
+import { VisitsTotalCard, type VisitsTotalCardHandle } from '@/components/admin/VisitsTotalCard';
 import { RoleBadge } from '@/components/auth/RoleBadge';
 import { PlanBadge, StatusBadge } from '@/components/subscription/PlanBadge';
 import { useAuthStore, getMockUsers } from '@/store/useAuthStore';
