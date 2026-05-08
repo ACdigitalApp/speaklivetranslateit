@@ -60,15 +60,19 @@ Deno.serve(async (req) => {
 
     const authHeader = req.headers.get('Authorization') ?? '';
 
+    // Service-role client (must NOT include user Authorization in global headers,
+    // otherwise Supabase uses the user's JWT instead of the service role and RLS kicks in).
     const adminClient = createClient(supabaseUrl, serviceRoleKey, {
       auth: { persistSession: false, autoRefreshToken: false },
-      global: { headers: { Authorization: authHeader } },
     });
 
     let email = req.headers.get('x-admin-email')?.toLowerCase() ?? '';
     if (authHeader.startsWith('Bearer ')) {
-      const { data: authData } = await adminClient.auth.getUser(authHeader.replace('Bearer ', ''));
-      email = authData.user?.email?.toLowerCase() ?? email;
+      const token = authHeader.replace('Bearer ', '');
+      try {
+        const { data: authData } = await adminClient.auth.getUser(token);
+        if (authData.user?.email) email = authData.user.email.toLowerCase();
+      } catch { /* ignore: token may be anon publishable key */ }
     }
 
     const legacyPasscode = req.headers.get('x-admin-passcode') ?? '';
