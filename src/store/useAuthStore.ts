@@ -171,7 +171,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     return true;
   },
 
-  logout: () => set({ currentUser: null, isAuthenticated: false }),
+  logout: () => { clearAdminCredentials(); set({ currentUser: null, isAuthenticated: false }); },
   setGuestMode: (v) => set({ guestMode: v }),
   updateUser: (data) => {
     const { currentUser } = get();
