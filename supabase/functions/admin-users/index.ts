@@ -78,14 +78,23 @@ Deno.serve(async (req) => {
 
     const { data: adminProfile, error: adminError } = await adminClient
       .from('profiles')
-      .select('id, email, deleted_at, user_roles!inner(role)')
+      .select('id, email, deleted_at')
       .eq('email', email)
       .is('deleted_at', null)
-      .eq('user_roles.role', 'admin')
       .maybeSingle();
 
     if (adminError) throw adminError;
     if (!adminProfile) return json({ error: 'Solo un amministratore può gestire gli utenti' }, 403);
+
+    const { data: roleRow, error: roleLookupError } = await adminClient
+      .from('user_roles')
+      .select('role')
+      .eq('user_id', adminProfile.id)
+      .eq('role', 'admin')
+      .maybeSingle();
+
+    if (roleLookupError) throw roleLookupError;
+    if (!roleRow) return json({ error: 'Solo un amministratore può gestire gli utenti' }, 403);
 
     const body = req.method === 'GET' ? { action: 'list' as Action } : await req.json().catch(() => ({}));
     const action = (body.action ?? 'list') as Action;
