@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import type { AppUser, UserRole } from '@/types/auth';
+import { setAdminCredentials, clearAdminCredentials } from '@/services/adminUsersApi';
 
 export const DEMO_MODE = true; // Always enabled until real auth backend is connected
 
