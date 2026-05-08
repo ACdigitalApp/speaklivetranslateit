@@ -115,12 +115,34 @@ export default function AdminUsers() {
 
   useEffect(() => { fetchCrossAppRevenue(); }, [fetchCrossAppRevenue]);
 
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [draft, setDraft] = useState<AppUser | null>(null);
+
+  const startEdit = (u: AppUser) => {
+    setEditingId(u.id);
+    setDraft({ ...u });
+  };
+  const cancelEdit = () => {
+    setEditingId(null);
+    setDraft(null);
+  };
+  const saveEdit = () => {
+    if (!draft) return;
+    const all = getMockUsers();
+    const idx = all.findIndex(x => x.id === draft.id);
+    if (idx >= 0) all[idx] = { ...all[idx], ...draft };
+    setUsers([...all]);
+    setEditingId(null);
+    setDraft(null);
+    toast({ title: '✅ Utente aggiornato', description: draft.name });
+  };
+
   const handleRefresh = useCallback(() => {
     setRefreshing(true);
     fetchCrossAppRevenue();
     visitsRef.current?.refresh();
     setTimeout(() => {
-      setUsers(getMockUsers());
+      setUsers([...getMockUsers()]);
       setRefreshing(false);
       toast({ title: '✅ Lista aggiornata', description: `${getMockUsers().length} utenti caricati` });
     }, 600);
