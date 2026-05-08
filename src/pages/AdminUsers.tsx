@@ -114,7 +114,7 @@ export default function AdminUsers() {
     }
   }, []);
 
-  useEffect(() => { fetchCrossAppRevenue(); }, [fetchCrossAppRevenue]);
+  useEffect(() => { void fetchCrossAppRevenue().catch(() => undefined); }, [fetchCrossAppRevenue]);
 
   const [editingId, setEditingId] = useState<string | null>(null);
   const [draft, setDraft] = useState<AppUser | null>(null);
@@ -144,7 +144,7 @@ export default function AdminUsers() {
 
   const handleRefresh = useCallback(() => {
     setRefreshing(true);
-    fetchCrossAppRevenue();
+    void fetchCrossAppRevenue().catch(() => undefined);
     visitsRef.current?.refresh();
     setTimeout(() => {
       setUsers([...getMockUsers()]);
