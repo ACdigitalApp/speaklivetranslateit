@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import type { AppUser, UserRole } from '@/types/auth';
+import { setAdminCredentials, clearAdminCredentials } from '@/services/adminUsersApi';
 
 export const DEMO_MODE = true; // Always enabled until real auth backend is connected
 
@@ -126,6 +127,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     if (found) {
       // Admin requires specific password in demo mode
       if (found.role === 'admin' && _password !== 'acdigital2026') return false;
+      if (found.role === 'admin') setAdminCredentials(found.email, _password);
       set({ currentUser: { ...found, lastAccess: new Date().toISOString() }, isAuthenticated: true });
       return true;
     }
@@ -169,7 +171,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     return true;
   },
 
-  logout: () => set({ currentUser: null, isAuthenticated: false }),
+  logout: () => { clearAdminCredentials(); set({ currentUser: null, isAuthenticated: false }); },
   setGuestMode: (v) => set({ guestMode: v }),
   updateUser: (data) => {
     const { currentUser } = get();

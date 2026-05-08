@@ -14,7 +14,8 @@ import { PageHeader } from '@/components/layout/PageHeader';
 import { VisitsTotalCard, type VisitsTotalCardHandle } from '@/components/admin/VisitsTotalCard';
 import { RoleBadge } from '@/components/auth/RoleBadge';
 import { PlanBadge, StatusBadge } from '@/components/subscription/PlanBadge';
-import { useAuthStore, getMockUsers, saveMockUsers } from '@/store/useAuthStore';
+import { useAuthStore } from '@/store/useAuthStore';
+import { adminListUsers, adminCreateUser, adminUpdateUser, adminRemoveUser, type AdminUserPayload } from '@/services/adminUsersApi';
 import { getProviderLabel } from '@/config/subscriptions';
 import { useToast } from '@/hooks/use-toast';
 import type { AppUser, UserRole, PlanType, SubscriptionStatus } from '@/types/auth';
@@ -76,8 +77,10 @@ type AppRevenue = { amount: number; users: number; loading: boolean };
 export default function AdminUsers() {
   const currentUser = useAuthStore(s => s.currentUser);
   const { toast } = useToast();
-  const [users, setUsers] = useState<AppUser[]>(getMockUsers());
+  const [users, setUsers] = useState<AppUser[]>([]);
   const [refreshing, setRefreshing] = useState(false);
+  const [loadingUsers, setLoadingUsers] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [crossApp, setCrossApp] = useState<Record<string, AppRevenue>>({
     gestionepassword: { amount: 0, users: 0, loading: true },
     librifree: { amount: 0, users: 0, loading: true },
@@ -96,7 +99,7 @@ export default function AdminUsers() {
   const [filterPlan, setFilterPlan] = useState<string>('all');
   const [filterStatus, setFilterStatus] = useState<string>('all');
   const visitsRef = useRef<VisitsTotalCardHandle>(null);
-  const [hasPendingChanges, setHasPendingChanges] = useState(false);
+  const [, setHasPendingChanges] = useState(false);
 
   // Carica incassi altre app all'avvio
   const fetchCrossAppRevenue = useCallback(async () => {
@@ -119,12 +122,40 @@ export default function AdminUsers() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [draft, setDraft] = useState<AppUser | null>(null);
 
-  const persistUsers = (nextUsers: AppUser[]) => {
-    const saved = saveMockUsers(nextUsers);
-    setUsers([...saved]);
-    setHasPendingChanges(false);
-    toast({ title: '✅ Modifiche salvate', description: 'La tabella utenti è stata aggiornata correttamente.' });
-  };
+  const buildPayload = (u: AppUser): AdminUserPayload => ({
+    id: u.id,
+    name: u.name,
+    email: u.email,
+    role: u.role,
+    phone: null,
+    whatsapp: u.whatsapp ?? null,
+    notifications: u.notifications,
+    plan: u.plan,
+    billingProvider: (u.billingProvider ?? 'mock') as NonNullable<AppUser['billingProvider']>,
+    subscriptionStatus: u.subscriptionStatus,
+    subscriptionEnd: u.subscriptionEnd ?? null,
+    totalPaid: u.totalPaid,
+    balance: u.balance,
+  });
+
+  const loadUsers = useCallback(async (silent = false) => {
+    if (!silent) setLoadingUsers(true);
+    try {
+      const list = await adminListUsers();
+      setUsers(list);
+      setLoadError(null);
+      return list;
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : 'Impossibile caricare gli utenti';
+      setLoadError(msg);
+      toast({ title: 'Errore caricamento utenti', description: msg, variant: 'destructive' });
+      return [] as AppUser[];
+    } finally {
+      if (!silent) setLoadingUsers(false);
+    }
+  }, [toast]);
+
+  useEffect(() => { void loadUsers(); }, [loadUsers]);
 
   const startEdit = (u: AppUser) => {
     setEditingId(u.id);
@@ -134,24 +165,29 @@ export default function AdminUsers() {
     setEditingId(null);
     setDraft(null);
   };
-  const saveEdit = () => {
+  const saveEdit = async () => {
     if (!draft) return;
-    const nextUsers = users.map(u => u.id === draft.id ? { ...u, ...draft } : u);
-    persistUsers(nextUsers);
-    setEditingId(null);
-    setDraft(null);
+    try {
+      const list = await adminUpdateUser(buildPayload(draft));
+      setUsers(list);
+      setHasPendingChanges(false);
+      setEditingId(null);
+      setDraft(null);
+      toast({ title: '✅ Utente aggiornato', description: `${draft.name || draft.email} salvato sul backend.` });
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : 'Errore durante il salvataggio';
+      toast({ title: 'Errore salvataggio', description: msg, variant: 'destructive' });
+    }
   };
 
-  const handleRefresh = useCallback(() => {
+  const handleRefresh = useCallback(async () => {
     setRefreshing(true);
     void fetchCrossAppRevenue().catch(() => undefined);
     visitsRef.current?.refresh();
-    setTimeout(() => {
-      setUsers([...getMockUsers()]);
-      setRefreshing(false);
-      toast({ title: '✅ Lista aggiornata', description: `${getMockUsers().length} utenti caricati` });
-    }, 600);
-  }, [toast, fetchCrossAppRevenue]);
+    const list = await loadUsers(true);
+    setRefreshing(false);
+    toast({ title: '✅ Lista aggiornata', description: `${list.length} utenti caricati dal backend` });
+  }, [toast, fetchCrossAppRevenue, loadUsers]);
 
   const revenue = useMemo(() => {
     const now = new Date();
@@ -195,44 +231,66 @@ export default function AdminUsers() {
     setUserFormOpen(true);
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!form.name || !form.email) return;
-    if (isNew) {
-      const newUser: AppUser = {
-        id: Date.now().toString(),
-        name: form.name,
-        email: form.email,
-        role: form.role,
-        whatsapp: form.whatsapp || undefined,
-        notifications: true,
-        registeredAt: new Date().toISOString(),
-        lastAccess: new Date().toISOString(),
-        plan: 'free',
-        subscriptionStatus: 'expired',
-        totalPaid: 0,
-        balance: 0,
-        transactions: [],
-        billingProvider: 'mock',
-      };
-      persistUsers([...users, newUser]);
-    } else if (selectedUser) {
-      persistUsers(users.map(u => u.id === selectedUser.id ? { ...u, name: form.name, email: form.email, role: form.role, whatsapp: form.whatsapp || undefined } : u));
+    try {
+      if (isNew) {
+        const list = await adminCreateUser({
+          name: form.name,
+          email: form.email,
+          role: form.role,
+          whatsapp: form.whatsapp || null,
+          notifications: true,
+          plan: 'free',
+          billingProvider: 'mock',
+          subscriptionStatus: 'inactive',
+          totalPaid: 0,
+          balance: 0,
+        });
+        setUsers(list);
+        toast({ title: '✅ Utente creato', description: `${form.name} aggiunto al backend.` });
+      } else if (selectedUser) {
+        const list = await adminUpdateUser({
+          ...buildPayload(selectedUser),
+          name: form.name,
+          email: form.email,
+          role: form.role,
+          whatsapp: form.whatsapp || null,
+        });
+        setUsers(list);
+        toast({ title: '✅ Utente aggiornato', description: `${form.name} salvato sul backend.` });
+      }
+      setUserFormOpen(false);
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : 'Errore durante il salvataggio';
+      toast({ title: 'Errore salvataggio', description: msg, variant: 'destructive' });
     }
-    setUserFormOpen(false);
   };
 
-  const handleDelete = () => {
-    if (selectedUser) {
-      const next = users.filter(u => u.id !== selectedUser.id);
-      persistUsers(next);
-      toast({ title: 'Utente eliminato', description: `${selectedUser.name || selectedUser.email} è stato rimosso correttamente.` });
+  const handleDelete = async () => {
+    if (!selectedUser) { setDeleteConfirmOpen(false); return; }
+    try {
+      const list = await adminRemoveUser(selectedUser.id);
+      setUsers(list);
+      toast({ title: '🗑️ Utente eliminato', description: `${selectedUser.name || selectedUser.email} rimosso definitivamente dal backend.` });
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : 'Errore durante eliminazione';
+      toast({ title: 'Errore eliminazione', description: msg, variant: 'destructive' });
     }
     setDeleteConfirmOpen(false);
     setSelectedUser(null);
   };
 
-  const toggleNotifications = (userId: string) => {
-    persistUsers(users.map(u => u.id === userId ? { ...u, notifications: !u.notifications } : u));
+  const toggleNotifications = async (userId: string) => {
+    const target = users.find(u => u.id === userId);
+    if (!target) return;
+    try {
+      const list = await adminUpdateUser({ ...buildPayload(target), notifications: !target.notifications });
+      setUsers(list);
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : 'Errore aggiornamento notifiche';
+      toast({ title: 'Errore', description: msg, variant: 'destructive' });
+    }
   };
 
   const fmtDate = (d?: string) => {
@@ -255,9 +313,7 @@ export default function AdminUsers() {
                 size="sm"
                 onClick={() => {
                   if (editingId) {
-                    saveEdit();
-                  } else if (hasPendingChanges) {
-                    persistUsers(users);
+                    void saveEdit();
                   } else {
                     toast({ title: 'Nessuna modifica da salvare' });
                   }
