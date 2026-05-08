@@ -48,7 +48,7 @@ export default function Checkout() {
   const [success, setSuccess] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  const price = PLAN_PRICES[plan];
+  const price = PLAN_PRICES[plan] ?? 0;
   const isTrial = plan === 'trial';
 
   const handleSubmit = (e: React.FormEvent) => {
