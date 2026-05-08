@@ -13,10 +13,12 @@ import Upgrade from "./pages/Upgrade.tsx";
 import Checkout from "./pages/Checkout.tsx";
 import NotFound from "./pages/NotFound.tsx";
 import { AuthGuard } from "./components/auth/AuthGuard.tsx";
+import { VisitTracker } from "./components/VisitTracker.tsx";
 import "./index.css";
 
 createRoot(document.getElementById("root")!).render(
   <BrowserRouter>
+    <VisitTracker />
     <Routes>
       <Route path="/" element={<App />} />
       <Route path="/photo" element={<AuthGuard><PhotoTranslator /></AuthGuard>} />
