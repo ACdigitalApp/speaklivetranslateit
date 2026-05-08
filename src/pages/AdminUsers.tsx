@@ -231,44 +231,66 @@ export default function AdminUsers() {
     setUserFormOpen(true);
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!form.name || !form.email) return;
-    if (isNew) {
-      const newUser: AppUser = {
-        id: Date.now().toString(),
-        name: form.name,
-        email: form.email,
-        role: form.role,
-        whatsapp: form.whatsapp || undefined,
-        notifications: true,
-        registeredAt: new Date().toISOString(),
-        lastAccess: new Date().toISOString(),
-        plan: 'free',
-        subscriptionStatus: 'expired',
-        totalPaid: 0,
-        balance: 0,
-        transactions: [],
-        billingProvider: 'mock',
-      };
-      persistUsers([...users, newUser]);
-    } else if (selectedUser) {
-      persistUsers(users.map(u => u.id === selectedUser.id ? { ...u, name: form.name, email: form.email, role: form.role, whatsapp: form.whatsapp || undefined } : u));
+    try {
+      if (isNew) {
+        const list = await adminCreateUser({
+          name: form.name,
+          email: form.email,
+          role: form.role,
+          whatsapp: form.whatsapp || null,
+          notifications: true,
+          plan: 'free',
+          billingProvider: 'mock',
+          subscriptionStatus: 'inactive',
+          totalPaid: 0,
+          balance: 0,
+        });
+        setUsers(list);
+        toast({ title: '✅ Utente creato', description: `${form.name} aggiunto al backend.` });
+      } else if (selectedUser) {
+        const list = await adminUpdateUser({
+          ...buildPayload(selectedUser),
+          name: form.name,
+          email: form.email,
+          role: form.role,
+          whatsapp: form.whatsapp || null,
+        });
+        setUsers(list);
+        toast({ title: '✅ Utente aggiornato', description: `${form.name} salvato sul backend.` });
+      }
+      setUserFormOpen(false);
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : 'Errore durante il salvataggio';
+      toast({ title: 'Errore salvataggio', description: msg, variant: 'destructive' });
     }
-    setUserFormOpen(false);
   };
 
-  const handleDelete = () => {
-    if (selectedUser) {
-      const next = users.filter(u => u.id !== selectedUser.id);
-      persistUsers(next);
-      toast({ title: 'Utente eliminato', description: `${selectedUser.name || selectedUser.email} è stato rimosso correttamente.` });
+  const handleDelete = async () => {
+    if (!selectedUser) { setDeleteConfirmOpen(false); return; }
+    try {
+      const list = await adminRemoveUser(selectedUser.id);
+      setUsers(list);
+      toast({ title: '🗑️ Utente eliminato', description: `${selectedUser.name || selectedUser.email} rimosso definitivamente dal backend.` });
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : 'Errore durante eliminazione';
+      toast({ title: 'Errore eliminazione', description: msg, variant: 'destructive' });
     }
     setDeleteConfirmOpen(false);
     setSelectedUser(null);
   };
 
-  const toggleNotifications = (userId: string) => {
-    persistUsers(users.map(u => u.id === userId ? { ...u, notifications: !u.notifications } : u));
+  const toggleNotifications = async (userId: string) => {
+    const target = users.find(u => u.id === userId);
+    if (!target) return;
+    try {
+      const list = await adminUpdateUser({ ...buildPayload(target), notifications: !target.notifications });
+      setUsers(list);
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : 'Errore aggiornamento notifiche';
+      toast({ title: 'Errore', description: msg, variant: 'destructive' });
+    }
   };
 
   const fmtDate = (d?: string) => {
