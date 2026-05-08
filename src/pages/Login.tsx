@@ -29,7 +29,7 @@ export default function Login() {
     setLoading(false);
     if (ok) {
       const user = useAuthStore.getState().currentUser;
-      navigate(user?.role === 'admin' ? '/admin' : '/');
+      navigate(user?.role === 'admin' ? '/admin/users' : '/');
     } else {
       setError('Credenziali non valide');
     }

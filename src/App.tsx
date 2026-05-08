@@ -801,11 +801,11 @@ function App() {
               </button>
               {currentUser?.role === 'admin' && (
                 <button
-                  onClick={() => navigate("/admin")}
-                  className="flex flex-1 min-w-[140px] items-center justify-center gap-2 rounded-[18px] border border-[#D7E3DA] bg-white/80 px-4 py-3.5 text-[15px] font-semibold text-[#1C6B3B] shadow-[0_4px_12px_rgba(22,42,28,0.06)] transition hover:bg-[#F4F8F5] active:scale-[0.98]"
+                  onClick={() => navigate("/admin/users")}
+                  className="flex flex-1 min-w-[160px] items-center justify-center gap-2 rounded-[18px] border border-[#1C6B3B] bg-[#1C6B3B] px-4 py-3.5 text-[15px] font-semibold text-white shadow-[0_4px_12px_rgba(22,42,28,0.15)] transition hover:bg-[#155a30] active:scale-[0.98]"
                 >
                   <Shield className="h-5 w-5" />
-                  Admin
+                  Pannello Admin
                 </button>
               )}
             </>

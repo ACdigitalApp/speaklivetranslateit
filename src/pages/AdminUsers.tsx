@@ -184,10 +184,11 @@ export default function AdminUsers() {
       <div className="max-w-full mx-auto px-4 py-6">
         <PageHeader
           title="Gestione Utenti"
-          subtitle="Amministra utenti, piani e incassi"
-          backTo="/admin"
+          subtitle="Pannello amministrativo — utenti, piani e incassi"
+          backTo="/"
           actions={
             <>
+              <Button variant="outline" size="sm" onClick={() => window.location.assign('/admin')}>Impostazioni Admin</Button>
               <Button variant="outline" size="sm" onClick={handleRefresh} disabled={refreshing}><RefreshCw size={14} className={`mr-1 ${refreshing ? 'animate-spin' : ''}`} /> {refreshing ? 'Aggiornando...' : 'Aggiorna'}</Button>
               <Button size="sm" onClick={openNew}><Plus size={14} className="mr-1" /> Nuovo Utente</Button>
             </>
