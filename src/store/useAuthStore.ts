@@ -36,7 +36,9 @@ const MOCK_ADMIN: AppUser = {
   billingProvider: 'mock',
 };
 
-const MOCK_USERS: AppUser[] = [
+const MOCK_USERS_STORAGE_KEY = 'speakeasy_admin_users';
+
+const DEFAULT_MOCK_USERS: AppUser[] = [
   MOCK_ADMIN,
   {
     id: '2', name: 'Mario Rossi', email: 'mario@example.com', role: 'user_pro',
@@ -81,7 +83,35 @@ const MOCK_USERS: AppUser[] = [
   },
 ];
 
+const cloneUsers = (users: AppUser[]) => users.map(user => ({
+  ...user,
+  transactions: user.transactions.map(transaction => ({ ...transaction })),
+}));
+
+const loadMockUsers = () => {
+  if (typeof window === 'undefined') return cloneUsers(DEFAULT_MOCK_USERS);
+
+  try {
+    const stored = window.localStorage.getItem(MOCK_USERS_STORAGE_KEY);
+    if (!stored) return cloneUsers(DEFAULT_MOCK_USERS);
+    const parsed = JSON.parse(stored) as AppUser[];
+    return Array.isArray(parsed) ? cloneUsers(parsed) : cloneUsers(DEFAULT_MOCK_USERS);
+  } catch {
+    return cloneUsers(DEFAULT_MOCK_USERS);
+  }
+};
+
+const MOCK_USERS: AppUser[] = loadMockUsers();
+
 export const getMockUsers = () => MOCK_USERS;
+
+export const saveMockUsers = (users: AppUser[]) => {
+  MOCK_USERS.splice(0, MOCK_USERS.length, ...cloneUsers(users));
+  if (typeof window !== 'undefined') {
+    window.localStorage.setItem(MOCK_USERS_STORAGE_KEY, JSON.stringify(MOCK_USERS));
+  }
+  return MOCK_USERS;
+};
 
 export const useAuthStore = create<AuthState>((set, get) => ({
   currentUser: null,
@@ -92,7 +122,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     if (!DEMO_MODE) return false;
     if (!_password) return false;
 
-    const found = MOCK_USERS.find(u => u.email.toLowerCase() === email.toLowerCase());
+    const found = getMockUsers().find(u => u.email.toLowerCase() === email.toLowerCase());
     if (found) {
       // Admin requires specific password in demo mode
       if (found.role === 'admin' && _password !== 'acdigital2026') return false;
@@ -113,6 +143,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       balance: 0,
       transactions: [],
     };
+    saveMockUsers([...getMockUsers(), newUser]);
     set({ currentUser: newUser, isAuthenticated: true });
     return true;
   },
@@ -133,6 +164,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       balance: 0,
       transactions: [],
     };
+    saveMockUsers([...getMockUsers(), newUser]);
     set({ currentUser: newUser, isAuthenticated: true });
     return true;
   },
