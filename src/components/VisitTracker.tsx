@@ -1,17 +1,24 @@
 import { useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
+import { useAuthStore } from '@/store/useAuthStore';
 
 const APP_KEY = 'speak_translate_live';
 const THROTTLE_PREFIX = 'speak_translate_live_visit_counted_at_';
 const THROTTLE_MS = 24 * 60 * 60 * 1000;
+const ADMIN_EMAILS = ['acdigital.app@gmail.com'];
 
 export function VisitTracker() {
   const location = useLocation();
+  const currentUser = useAuthStore((s) => s.currentUser);
 
   useEffect(() => {
     const path = location.pathname;
     if (path.startsWith('/admin')) return;
+
+    // Exclude admin users from public visit counter
+    if (currentUser?.role === 'admin') return;
+    if (currentUser?.email && ADMIN_EMAILS.includes(currentUser.email.toLowerCase())) return;
 
     let lastTs = 0;
     const key = THROTTLE_PREFIX + path;
