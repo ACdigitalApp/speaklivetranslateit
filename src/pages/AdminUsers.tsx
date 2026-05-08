@@ -96,6 +96,7 @@ export default function AdminUsers() {
   const [filterPlan, setFilterPlan] = useState<string>('all');
   const [filterStatus, setFilterStatus] = useState<string>('all');
   const visitsRef = useRef<VisitsTotalCardHandle>(null);
+  const [hasPendingChanges, setHasPendingChanges] = useState(false);
 
   // Carica incassi altre app all'avvio
   const fetchCrossAppRevenue = useCallback(async () => {
@@ -118,6 +119,14 @@ export default function AdminUsers() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [draft, setDraft] = useState<AppUser | null>(null);
 
+  const persistUsers = (nextUsers: AppUser[]) => {
+    const all = getMockUsers();
+    all.splice(0, all.length, ...nextUsers);
+    setUsers([...all]);
+    setHasPendingChanges(false);
+    toast({ title: '✅ Modifiche salvate', description: 'Le modifiche agli utenti sono state applicate' });
+  };
+
   const startEdit = (u: AppUser) => {
     setEditingId(u.id);
     setDraft({ ...u });
@@ -128,13 +137,10 @@ export default function AdminUsers() {
   };
   const saveEdit = () => {
     if (!draft) return;
-    const all = getMockUsers();
-    const idx = all.findIndex(x => x.id === draft.id);
-    if (idx >= 0) all[idx] = { ...all[idx], ...draft };
-    setUsers([...all]);
+    const nextUsers = users.map(u => u.id === draft.id ? { ...u, ...draft } : u);
+    persistUsers(nextUsers);
     setEditingId(null);
     setDraft(null);
-    toast({ title: '✅ Utente aggiornato', description: draft.name });
   };
 
   const handleRefresh = useCallback(() => {
@@ -217,7 +223,11 @@ export default function AdminUsers() {
   };
 
   const handleDelete = () => {
-    if (selectedUser) setUsers(prev => prev.filter(u => u.id !== selectedUser.id));
+    if (selectedUser) {
+      setUsers(prev => prev.filter(u => u.id !== selectedUser.id));
+      setHasPendingChanges(true);
+      toast({ title: 'Utente rimosso', description: 'Premi Salva per confermare la modifica' });
+    }
     setDeleteConfirmOpen(false);
     setSelectedUser(null);
   };
@@ -247,8 +257,10 @@ export default function AdminUsers() {
                 onClick={() => {
                   if (editingId) {
                     saveEdit();
+                  } else if (hasPendingChanges) {
+                    persistUsers(users);
                   } else {
-                    toast({ title: '✅ Modifiche salvate', description: 'Tutte le modifiche sono state applicate' });
+                    toast({ title: 'Nessuna modifica da salvare' });
                   }
                 }}
                 className="rounded-full bg-[#1C6B3B] text-white hover:bg-[#165330] shadow-sm font-semibold gap-1"
