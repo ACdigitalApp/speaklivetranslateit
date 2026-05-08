@@ -242,6 +242,14 @@ export default function AdminUsers() {
             <>
               <Button variant="outline" size="sm" onClick={() => window.location.assign('/admin')}>Impostazioni Admin</Button>
               <Button variant="outline" size="sm" onClick={handleRefresh} disabled={refreshing}><RefreshCw size={14} className={`mr-1 ${refreshing ? 'animate-spin' : ''}`} /> {refreshing ? 'Aggiornando...' : 'Aggiorna'}</Button>
+              <Button
+                size="sm"
+                onClick={saveEdit}
+                disabled={!editingId}
+                className="rounded-full bg-[#1C6B3B] text-white hover:bg-[#165330] shadow-sm font-semibold gap-1 disabled:opacity-50"
+              >
+                <Save size={14} /> Salva
+              </Button>
               <Button size="sm" onClick={openNew}><Plus size={14} className="mr-1" /> Nuovo Utente</Button>
             </>
           }
