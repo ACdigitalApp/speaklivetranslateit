@@ -4,14 +4,14 @@ import { useAuthStore, getMockUsers } from './useAuthStore';
 
 const generateRef = () => `PAY-${Date.now().toString(36).toUpperCase()}-${Math.random().toString(36).slice(2, 6).toUpperCase()}`;
 
-const PLAN_PRICES: Record<PlanType, number> = {
+const PLAN_PRICES: Partial<Record<PlanType, number>> = {
   free: 0,
   trial: 0,
   premium_monthly: 7.99,
   premium_yearly: 49.99,
 };
 
-const PLAN_LABELS: Record<PlanType, string> = {
+const PLAN_LABELS: Partial<Record<PlanType, string>> = {
   free: 'Free',
   trial: 'Trial (7 giorni)',
   premium_monthly: 'Premium Monthly',
