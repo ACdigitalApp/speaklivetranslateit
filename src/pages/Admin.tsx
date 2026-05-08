@@ -68,8 +68,8 @@ export default function Admin() {
   return (
     <div className="min-h-[100dvh] bg-vox-page">
       <div className="max-w-3xl mx-auto px-4 py-6">
-        <PageHeader title="Amministrazione" subtitle="Gestione impostazioni e dati admin" actions={
-          <Button onClick={() => navigate('/admin/users')} variant="outline" size="sm"><Users size={14} className="mr-1" /> Gestione Utenti</Button>
+        <PageHeader title="Impostazioni Admin" subtitle="Configurazione avanzata, dati bancari e diagnostica" backTo="/admin/users" actions={
+          <Button onClick={() => navigate('/admin/users')} size="sm"><Users size={14} className="mr-1" /> Vai a Gestione Utenti</Button>
         } />
 
         <div className="space-y-6">
