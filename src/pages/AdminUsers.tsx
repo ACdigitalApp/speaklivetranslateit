@@ -77,8 +77,10 @@ type AppRevenue = { amount: number; users: number; loading: boolean };
 export default function AdminUsers() {
   const currentUser = useAuthStore(s => s.currentUser);
   const { toast } = useToast();
-  const [users, setUsers] = useState<AppUser[]>(getMockUsers());
+  const [users, setUsers] = useState<AppUser[]>([]);
   const [refreshing, setRefreshing] = useState(false);
+  const [loadingUsers, setLoadingUsers] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [crossApp, setCrossApp] = useState<Record<string, AppRevenue>>({
     gestionepassword: { amount: 0, users: 0, loading: true },
     librifree: { amount: 0, users: 0, loading: true },
