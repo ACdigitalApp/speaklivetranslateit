@@ -85,6 +85,8 @@ const createId = () => {
 
 function App() {
   const navigate = useNavigate();
+  const location = useLocation();
+  const isAdminRoute = location.pathname.startsWith('/admin');
   const { currentUser, isAuthenticated, logout } = useAuthStore();
   const [fromLang, setFromLang] = useState<Language>(languages[0]);
   const [toLang, setToLang] = useState<Language>(languages[1]);
