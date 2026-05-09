@@ -70,6 +70,7 @@ const CROSS_APP_APIS = {
   gestionepassword: 'https://gestione-password-backend.up.railway.app/api/admin/revenue',
   librifree: 'https://librifree-backend.up.railway.app/api/admin/revenue',
   gestionescadenze: 'https://gestionescadenze-backend.up.railway.app/api/admin/revenue',
+  rosariosettimanale: 'https://rosariosettimanale-backend.up.railway.app/api/admin/revenue',
 };
 
 type AppRevenue = { amount: number; users: number; loading: boolean };
@@ -85,6 +86,7 @@ export default function AdminUsers() {
     gestionepassword: { amount: 0, users: 0, loading: true },
     librifree: { amount: 0, users: 0, loading: true },
     gestionescadenze: { amount: 0, users: 0, loading: true },
+    rosariosettimanale: { amount: 0, users: 0, loading: true },
   });
   const [userFormOpen, setUserFormOpen] = useState(false);
   const [pwFormOpen, setPwFormOpen] = useState(false);
@@ -349,15 +351,16 @@ export default function AdminUsers() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4 mb-4">
               <AppRevenueCard name="SpeakEasy Translator" domain="speaklivetranslate.it" amount={revenue.totalRevenue} users={users.length} color="green" loading={false} />
               <AppRevenueCard name="Gestione Password" domain="gestionepassword.it" amount={crossApp.gestionepassword.amount} users={crossApp.gestionepassword.users} color="blue" loading={crossApp.gestionepassword.loading} />
               <AppRevenueCard name="Librifree" domain="librifree.it" amount={crossApp.librifree.amount} users={crossApp.librifree.users} color="orange" loading={crossApp.librifree.loading} />
               <AppRevenueCard name="Gestione Scadenze" domain="gestionescadenze.app" amount={crossApp.gestionescadenze.amount} users={crossApp.gestionescadenze.users} color="purple" loading={crossApp.gestionescadenze.loading} />
+              <AppRevenueCard name="Rosario Settimanale" domain="rosariosettimanale.it" amount={crossApp.rosariosettimanale.amount} users={crossApp.rosariosettimanale.users} color="rose" loading={crossApp.rosariosettimanale.loading} />
             </div>
             <div className="flex items-center justify-between bg-primary text-primary-foreground rounded-lg px-4 py-3">
               <span className="font-bold text-sm">💰 TOTALE GENERALE ACdigitalApp</span>
-              <span className="font-bold text-lg font-mono">€{(revenue.totalRevenue + crossApp.gestionepassword.amount + crossApp.librifree.amount + crossApp.gestionescadenze.amount).toFixed(2)}</span>
+              <span className="font-bold text-lg font-mono">€{(revenue.totalRevenue + crossApp.gestionepassword.amount + crossApp.librifree.amount + crossApp.gestionescadenze.amount + crossApp.rosariosettimanale.amount).toFixed(2)}</span>
             </div>
           </CardContent>
         </Card>
@@ -682,12 +685,14 @@ function AppRevenueCard({ name, domain, amount, users, color, loading }: { name:
     blue: 'border-blue-200 bg-blue-50',
     orange: 'border-orange-200 bg-orange-50',
     purple: 'border-purple-200 bg-purple-50',
+    rose: 'border-rose-200 bg-rose-50',
   };
   const textMap: Record<string, string> = {
     green: 'text-green-700',
     blue: 'text-blue-700',
     orange: 'text-orange-700',
     purple: 'text-purple-700',
+    rose: 'text-rose-700',
   };
   return (
     <div className={`rounded-lg border p-3 ${colorMap[color]}`}>
