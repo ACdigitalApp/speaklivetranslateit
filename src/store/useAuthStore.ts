@@ -190,6 +190,16 @@ export const useAuthStore = create<AuthState>()(
     };
     saveMockUsers([...getMockUsers(), newUser]);
     set({ currentUser: newUser, isAuthenticated: true });
+    import('@/lib/notifyAdmin').then(({ notifyAdmin }) => {
+      notifyAdmin('new_signup', `signup-${newUser.id}`, {
+        userId: newUser.id,
+        email: newUser.email,
+        name: newUser.name,
+        whatsapp: newUser.whatsapp,
+        plan: newUser.plan,
+        provider: 'email',
+      });
+    });
     return true;
   },
 
