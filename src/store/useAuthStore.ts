@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { persist, createJSONStorage } from 'zustand/middleware';
 import type { AppUser, UserRole } from '@/types/auth';
 import { setAdminCredentials, clearAdminCredentials } from '@/services/adminUsersApi';
 
