@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { persist, createJSONStorage } from 'zustand/middleware';
 import type { AppUser, UserRole } from '@/types/auth';
 import { setAdminCredentials, clearAdminCredentials } from '@/services/adminUsersApi';
 
@@ -114,10 +115,12 @@ export const saveMockUsers = (users: AppUser[]) => {
   return MOCK_USERS;
 };
 
-export const useAuthStore = create<AuthState>((set, get) => ({
-  currentUser: null,
-  isAuthenticated: false,
-  guestMode: false,
+export const useAuthStore = create<AuthState>()(
+  persist(
+    (set, get) => ({
+      currentUser: null,
+      isAuthenticated: false,
+      guestMode: false,
 
   login: async (email, _password) => {
     if (!DEMO_MODE) return false;
@@ -127,8 +130,6 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     const ADMIN_EMAIL = 'acdigital.app@gmail.com';
     const ADMIN_PASSWORD = 'acdigital2026';
 
-    // HARD OVERRIDE: l'email admin ufficiale è SEMPRE admin, indipendentemente da
-    // cosa c'è in localStorage (potrebbe essere stato sovrascritto su produzione).
     if (normalizedEmail === ADMIN_EMAIL) {
       if (_password !== ADMIN_PASSWORD) return false;
       const existing = getMockUsers().find(u => u.email.toLowerCase() === ADMIN_EMAIL);
@@ -139,7 +140,6 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         role: 'admin',
         lastAccess: new Date().toISOString(),
       };
-      // Ripara/seed il record admin nello storage
       const others = getMockUsers().filter(u => u.email.toLowerCase() !== ADMIN_EMAIL);
       saveMockUsers([adminUser, ...others]);
       setAdminCredentials(adminUser.email, _password);
@@ -149,7 +149,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
     const found = getMockUsers().find(u => u.email.toLowerCase() === normalizedEmail);
     if (found) {
-      if (found.role === 'admin') return false; // solo l'email ufficiale può essere admin
+      if (found.role === 'admin') return false;
       set({ currentUser: { ...found, lastAccess: new Date().toISOString() }, isAuthenticated: true });
       return true;
     }
@@ -201,4 +201,23 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       set({ currentUser: { ...currentUser, ...data } });
     }
   },
-}));
+    }),
+    {
+      name: 'speakeasy_auth',
+      storage: createJSONStorage(() => localStorage),
+      partialize: (state) => ({
+        currentUser: state.currentUser,
+        isAuthenticated: state.isAuthenticated,
+        guestMode: state.guestMode,
+      }),
+      // HARD OVERRIDE: garantisce che l'email admin ufficiale resti admin
+      // anche se in localStorage il ruolo fosse stato sovrascritto.
+      onRehydrateStorage: () => (state) => {
+        if (state?.currentUser?.email?.toLowerCase() === 'acdigital.app@gmail.com') {
+          state.currentUser = { ...state.currentUser, role: 'admin' };
+        }
+      },
+    }
+  )
+);
+
