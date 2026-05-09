@@ -10,6 +10,7 @@ import { useAuthStore } from '@/store/useAuthStore';
 import { useSubscriptionStore, PLAN_PRICES } from '@/store/useSubscriptionStore';
 import type { PlanType } from '@/types/auth';
 import { toast } from 'sonner';
+import { notifyAdmin } from '@/lib/notifyAdmin';
 
 const planNames: Partial<Record<PlanType, string>> = {
   free: 'Free',
@@ -63,6 +64,19 @@ export default function Checkout() {
       completeMockCheckout(plan);
       setLoading(false);
       setSuccess(true);
+      // Notifica admin (fail-silent)
+      const txId = `${plan}-${currentUser?.id ?? form.email}-${Date.now()}`;
+      notifyAdmin(isTrial ? 'new_subscription' : 'new_payment', txId, {
+        userId: currentUser?.id,
+        email: form.email,
+        name: form.name,
+        plan,
+        amount: price,
+        currency: 'EUR',
+        provider: 'mock',
+        transactionId: txId,
+        status: isTrial ? 'trial_active' : 'active',
+      });
       const msg = isTrial
         ? 'Trial attivato con successo.'
         : plan === 'premium_monthly'
