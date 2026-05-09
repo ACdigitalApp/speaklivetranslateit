@@ -1,5 +1,7 @@
 // Edge function: notify-admin
 // Invia una email admin tramite Resend con protezione anti-duplicati.
+// Hardening: whitelist event_type/app_key, validazione idempotency_key,
+// payload ridotto a campi essenziali, soft origin check.
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 
 const corsHeaders = {
@@ -12,13 +14,62 @@ const ADMIN_EMAIL = "acdigital.app@gmail.com";
 // Per usare no-reply@acdigitalapp.it verificare prima il dominio su Resend e poi sostituire FROM.
 const FROM = "AC Digital App <onboarding@resend.dev>";
 
+const ALLOWED_EVENTS = new Set(["new_signup", "new_payment", "new_subscription"]);
+const ALLOWED_APP_KEYS = new Set(["speak_translate_live", "speaklivetranslate"]);
+const IDEMPOTENCY_RE = /^[A-Za-z0-9._-]{1,120}$/;
+
+const ALLOWED_ORIGIN_HOSTS = [
+  "speaklivetranslate.it",
+  "www.speaklivetranslate.it",
+  "speaklivetranslateit.lovable.app",
+  "localhost",
+  "127.0.0.1",
+];
+const ALLOWED_ORIGIN_SUFFIXES = [".lovable.app", ".lovableproject.com"];
+
+const ESSENTIAL_FIELDS = ["email", "plan", "amount", "currency", "environment", "provider", "note", "timestamp", "userId", "name"] as const;
+
 interface Payload {
   appKey: string;
   appName: string;
-  eventType: "new_signup" | "new_payment" | "new_subscription";
+  eventType: string;
   idempotencyKey: string;
   environment?: "production" | "preview" | "demo";
   data: Record<string, unknown>;
+}
+
+function jsonResponse(status: number, body: unknown) {
+  return new Response(JSON.stringify(body), {
+    status,
+    headers: { ...corsHeaders, "Content-Type": "application/json" },
+  });
+}
+
+function isOriginAllowed(req: Request): { allowed: boolean; warn: boolean } {
+  const origin = req.headers.get("origin") ?? req.headers.get("referer") ?? "";
+  if (!origin) return { allowed: true, warn: true }; // soft: permetti curl/test, ma logga
+  try {
+    const u = new URL(origin);
+    if (ALLOWED_ORIGIN_HOSTS.includes(u.hostname)) return { allowed: true, warn: false };
+    if (ALLOWED_ORIGIN_SUFFIXES.some((s) => u.hostname.endsWith(s))) return { allowed: true, warn: false };
+    return { allowed: false, warn: false };
+  } catch {
+    return { allowed: false, warn: false };
+  }
+}
+
+function reduceData(data: Record<string, unknown> | undefined): Record<string, unknown> {
+  if (!data || typeof data !== "object") return {};
+  const out: Record<string, unknown> = {};
+  for (const k of ESSENTIAL_FIELDS) {
+    if (k in data) {
+      const v = data[k];
+      if (v === undefined || v === null) continue;
+      // tronca stringhe troppo lunghe
+      out[k] = typeof v === "string" ? v.slice(0, 500) : v;
+    }
+  }
+  return out;
 }
 
 function buildSubject(p: Payload): string {
@@ -31,8 +82,8 @@ function buildSubject(p: Payload): string {
   return `[${p.appName}] ${label}`;
 }
 
-function buildHtml(p: Payload): string {
-  const rows = Object.entries(p.data)
+function buildHtml(p: Payload, reduced: Record<string, unknown>): string {
+  const rows = Object.entries(reduced)
     .filter(([, v]) => v !== undefined && v !== null && v !== "")
     .map(
       ([k, v]) =>
@@ -62,13 +113,45 @@ Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
 
   try {
-    const body = (await req.json()) as Payload;
-    if (!body.appKey || !body.appName || !body.eventType || !body.idempotencyKey) {
-      return new Response(JSON.stringify({ error: "missing fields" }), {
-        status: 400,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+    // --- Origin/Referer soft check ---
+    const originCheck = isOriginAllowed(req);
+    if (!originCheck.allowed) {
+      return jsonResponse(403, { ok: false, error: "origin_not_allowed" });
     }
+    if (originCheck.warn) {
+      console.warn("[notify-admin] missing Origin/Referer (allowed for tests)");
+    }
+
+    let body: Payload;
+    try {
+      body = (await req.json()) as Payload;
+    } catch {
+      return jsonResponse(400, { ok: false, error: "invalid_json" });
+    }
+
+    if (!body.appKey || !body.appName || !body.eventType || !body.idempotencyKey) {
+      return jsonResponse(400, { ok: false, error: "missing_fields" });
+    }
+
+    // --- Whitelist app_key ---
+    if (!ALLOWED_APP_KEYS.has(body.appKey)) {
+      return jsonResponse(400, { ok: false, error: "invalid_app_key" });
+    }
+
+    // --- Whitelist event_type ---
+    if (!ALLOWED_EVENTS.has(body.eventType)) {
+      return jsonResponse(400, { ok: false, error: "invalid_event_type" });
+    }
+
+    // --- Idempotency key validation ---
+    if (typeof body.idempotencyKey !== "string" || !IDEMPOTENCY_RE.test(body.idempotencyKey)) {
+      return jsonResponse(400, { ok: false, error: "invalid_idempotency_key" });
+    }
+
+    // --- App name length cap ---
+    const appName = String(body.appName).slice(0, 80);
+
+    const reducedPayload = reduceData(body.data);
 
     const supabase = createClient(
       Deno.env.get("SUPABASE_URL")!,
@@ -84,22 +167,29 @@ Deno.serve(async (req) => {
         idempotency_key: body.idempotencyKey,
         recipient: ADMIN_EMAIL,
         status: "pending",
-        payload: body.data ?? {},
+        payload: reducedPayload,
       });
 
     if (insertErr) {
       // Codice 23505 = unique violation → duplicato, no-op
       if ((insertErr as { code?: string }).code === "23505") {
-        return new Response(JSON.stringify({ ok: true, deduped: true }), {
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
+        return jsonResponse(200, { ok: true, deduped: true });
       }
       throw insertErr;
     }
 
     const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
-    if (!RESEND_API_KEY) throw new Error("RESEND_API_KEY missing");
+    if (!RESEND_API_KEY) {
+      await supabase
+        .from("admin_notification_log")
+        .update({ status: "failed", error: "RESEND_API_KEY missing" })
+        .eq("app_key", body.appKey)
+        .eq("event_type", body.eventType)
+        .eq("idempotency_key", body.idempotencyKey);
+      return jsonResponse(500, { ok: false, error: "resend_key_missing" });
+    }
 
+    const subjectPayload: Payload = { ...body, appName };
     const res = await fetch("https://api.resend.com/emails", {
       method: "POST",
       headers: {
@@ -109,8 +199,8 @@ Deno.serve(async (req) => {
       body: JSON.stringify({
         from: FROM,
         to: [ADMIN_EMAIL],
-        subject: buildSubject(body),
-        html: buildHtml(body),
+        subject: buildSubject(subjectPayload),
+        html: buildHtml(subjectPayload, reducedPayload),
       }),
     });
 
@@ -128,23 +218,12 @@ Deno.serve(async (req) => {
 
     if (!res.ok) {
       console.error("[notify-admin] resend error", out);
-      return new Response(JSON.stringify({ ok: false, error: out }), {
-        status: 502,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+      return jsonResponse(502, { ok: false, error: "resend_send_failed" });
     }
 
-    return new Response(JSON.stringify({ ok: true }), {
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
+    return jsonResponse(200, { ok: true });
   } catch (e) {
     console.error("[notify-admin] error", e);
-    return new Response(
-      JSON.stringify({ ok: false, error: (e as Error).message }),
-      {
-        status: 500,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      },
-    );
+    return jsonResponse(500, { ok: false, error: (e as Error).message });
   }
 });

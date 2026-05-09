@@ -2,7 +2,7 @@
 // Fail-silent: non blocca mai il flusso utente.
 import { supabase } from "@/integrations/supabase/client";
 
-const APP_KEY = "speak-translate-live";
+const APP_KEY = "speak_translate_live"; // whitelist edge function
 const APP_NAME = "Speak & Translate Live";
 
 function getEnvironment(): "production" | "preview" | "demo" {
