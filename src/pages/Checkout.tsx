@@ -67,7 +67,8 @@ export default function Checkout() {
       // Notifica admin (fail-silent). Pagamento DEMO/MOCK — nessun addebito reale.
       // TODO PRODUZIONE: le notifiche di pagamento reale devono partire da
       // webhook Stripe/PayPal lato server, non dal client.
-      const txId = `${plan}-${currentUser?.id ?? form.email}-${Date.now()}`;
+      const safeId = (currentUser?.id ?? form.email).replace(/[^A-Za-z0-9._-]/g, '_');
+      const txId = `${plan}-${safeId}-${Date.now()}`;
       notifyAdmin(isTrial ? 'new_subscription' : 'new_payment', txId, {
         userId: currentUser?.id,
         email: form.email,
