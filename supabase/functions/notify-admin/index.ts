@@ -9,6 +9,7 @@ const corsHeaders = {
 };
 
 const ADMIN_EMAIL = "acdigital.app@gmail.com";
+// Per usare no-reply@acdigitalapp.it verificare prima il dominio su Resend e poi sostituire FROM.
 const FROM = "AC Digital App <onboarding@resend.dev>";
 
 interface Payload {
