@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuthStore } from "@/store/useAuthStore";
 
 interface NotifRow {
   id: string;
@@ -13,10 +14,16 @@ interface NotifRow {
 }
 
 export function AdminNotificationsCard() {
+  const currentUser = useAuthStore((s) => s.currentUser);
+  const isAdmin = currentUser?.role === "admin";
   const [rows, setRows] = useState<NotifRow[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    if (!isAdmin) {
+      setLoading(false);
+      return;
+    }
     let mounted = true;
     (async () => {
       const { data } = await supabase
@@ -32,7 +39,9 @@ export function AdminNotificationsCard() {
     return () => {
       mounted = false;
     };
-  }, []);
+  }, [isAdmin]);
+
+  if (!isAdmin) return null;
 
   const statusVariant = (s: string): "default" | "secondary" | "destructive" =>
     s === "sent" ? "default" : s === "failed" ? "destructive" : "secondary";
