@@ -14,6 +14,42 @@ export type Database = {
   }
   public: {
     Tables: {
+      admin_notification_log: {
+        Row: {
+          app_key: string
+          created_at: string
+          error: string | null
+          event_type: string
+          id: string
+          idempotency_key: string
+          payload: Json | null
+          recipient: string
+          status: string
+        }
+        Insert: {
+          app_key: string
+          created_at?: string
+          error?: string | null
+          event_type: string
+          id?: string
+          idempotency_key: string
+          payload?: Json | null
+          recipient: string
+          status?: string
+        }
+        Update: {
+          app_key?: string
+          created_at?: string
+          error?: string | null
+          event_type?: string
+          id?: string
+          idempotency_key?: string
+          payload?: Json | null
+          recipient?: string
+          status?: string
+        }
+        Relationships: []
+      }
       app_visit_counters: {
         Row: {
           app_key: string
