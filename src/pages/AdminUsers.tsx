@@ -20,6 +20,7 @@ import { getProviderLabel } from '@/config/subscriptions';
 import { useToast } from '@/hooks/use-toast';
 import type { AppUser, UserRole, PlanType, SubscriptionStatus } from '@/types/auth';
 import type { BillingProvider } from '@/types/billing';
+import { AdminNotificationsCard } from '@/components/admin/AdminNotificationsCard';
 
 const PLAN_OPTIONS: { value: PlanType; label: string }[] = [
   { value: 'free', label: 'Free' },
@@ -365,7 +366,9 @@ export default function AdminUsers() {
           </CardContent>
         </Card>
 
-        {/* Filters */}
+        <AdminNotificationsCard />
+
+
         <div className="flex flex-wrap gap-3 mb-4">
           <div className="flex-1 min-w-[200px]">
             <div className="relative">

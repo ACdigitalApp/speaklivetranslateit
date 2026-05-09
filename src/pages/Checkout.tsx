@@ -64,7 +64,9 @@ export default function Checkout() {
       completeMockCheckout(plan);
       setLoading(false);
       setSuccess(true);
-      // Notifica admin (fail-silent)
+      // Notifica admin (fail-silent). Pagamento DEMO/MOCK — nessun addebito reale.
+      // TODO PRODUZIONE: le notifiche di pagamento reale devono partire da
+      // webhook Stripe/PayPal lato server, non dal client.
       const txId = `${plan}-${currentUser?.id ?? form.email}-${Date.now()}`;
       notifyAdmin(isTrial ? 'new_subscription' : 'new_payment', txId, {
         userId: currentUser?.id,
@@ -73,9 +75,10 @@ export default function Checkout() {
         plan,
         amount: price,
         currency: 'EUR',
-        provider: 'mock',
+        provider: 'mock-demo',
         transactionId: txId,
         status: isTrial ? 'trial_active' : 'active',
+        note: 'DEMO checkout — no real charge',
       });
       const msg = isTrial
         ? 'Trial attivato con successo.'
