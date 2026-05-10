@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import SEOHead from '@/components/SEOHead';
 import { useNavigate } from 'react-router-dom';
 import { Shield, Activity, Info, Landmark, Eye, Plus, CreditCard, ScrollText, RefreshCw, Users, DollarSign, TrendingUp, Globe, Smartphone, Store } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';

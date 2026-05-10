@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import SEOHead from '@/components/SEOHead';
 import { useNavigate, Link } from 'react-router-dom';
 import { Eye, EyeOff, Languages, ArrowLeft, Mail } from 'lucide-react';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
