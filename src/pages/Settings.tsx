@@ -58,9 +58,7 @@ export default function SettingsPage() {
   const billingProvider = (currentUser as any).billingProvider || activeProvider;
 
   return (
-    <>
-      <SEOHead noindex title="Impostazioni — Speak & Translate Live" />
-      <div className="min-h-[100dvh] bg-vox-page">
+    <div className="min-h-[100dvh] bg-vox-page">
       <div className="max-w-2xl mx-auto px-4 py-6">
         <PageHeader title="Impostazioni" subtitle="Gestisci il tuo profilo e preferenze" />
 
@@ -233,6 +231,5 @@ export default function SettingsPage() {
         </DialogContent>
       </Dialog>
     </div>
-  </>
   );
 }

@@ -59,9 +59,7 @@ const PROVIDER_COLORS: Record<BillingProvider, string> = {
 
 function ProviderBadge({ provider }: { provider: BillingProvider }) {
   return (
-    <>
-      <SEOHead noindex title="Admin Utenti — Speak & Translate Live" />
-      <Badge variant="outline" className={`text-xs ${PROVIDER_COLORS[provider]}`}>
+    <Badge variant="outline" className={`text-xs ${PROVIDER_COLORS[provider]}`}>
       {provider === 'stripe' && <Globe size={10} className="mr-1" />}
       {(provider === 'apple' || provider === 'googleplay') && <Smartphone size={10} className="mr-1" />}
       {getProviderLabel(provider)}
@@ -716,6 +714,5 @@ function AppRevenueCard({ name, domain, amount, users, color, loading }: { name:
         </>
       )}
     </div>
-  </>
   );
 }

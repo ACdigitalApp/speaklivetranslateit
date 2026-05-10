@@ -93,9 +93,7 @@ export default function Checkout() {
 
   if (success) {
     return (
-      <>
-        <SEOHead noindex title="Checkout — Speak & Translate Live" />
-        <div className="min-h-[100dvh] bg-vox-page flex items-center justify-center px-4">
+      <div className="min-h-[100dvh] bg-vox-page flex items-center justify-center px-4">
         <Card className="w-full max-w-md text-center">
           <CardContent className="py-12 space-y-4">
             <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto">
@@ -202,6 +200,5 @@ export default function Checkout() {
         </form>
       </div>
     </div>
-  </>
   );
 }

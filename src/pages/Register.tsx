@@ -37,9 +37,7 @@ export default function Register() {
   };
 
   return (
-    <>
-      <SEOHead noindex title="Registrazione — Speak & Translate Live" />
-      <div className="min-h-[100dvh] flex items-center justify-center px-4 py-8 bg-vox-page">
+    <div className="min-h-[100dvh] flex items-center justify-center px-4 py-8 bg-vox-page">
       <Card className="w-full max-w-md shadow-vox-soft border-border">
         <CardHeader className="items-center pb-2">
           <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center mb-3">
@@ -106,6 +104,5 @@ export default function Register() {
         </CardContent>
       </Card>
     </div>
-  </>
   );
 }
