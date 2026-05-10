@@ -31,6 +31,8 @@ import { useAppStore } from "@/store/useAppStore";
 import { useAuthStore } from "@/store/useAuthStore";
 import { SettingsModal } from "@/components/vox/VoxUnified";
 import { VoiceSetupModal } from "@/components/vox/VoiceSetupModal";
+import SEOHead from "@/components/SEOHead";
+import HomeFAQ, { HOME_FAQ_DATA } from "@/components/HomeFAQ";
 
 declare global {
   interface Window {
@@ -718,8 +720,63 @@ function App() {
     };
   }, [clearRestartTimeout, releaseMicPermission, stopListening, stopSpeaking]);
 
+  const seoJsonLd = [
+    {
+      "@context": "https://schema.org",
+      "@type": "Organization",
+      name: "AC Digital App",
+      url: "https://speaklivetranslate.it",
+      email: "acdigital.app@gmail.com",
+    },
+    {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      name: "Speak & Translate Live",
+      url: "https://speaklivetranslate.it",
+    },
+    {
+      "@context": "https://schema.org",
+      "@type": "SoftwareApplication",
+      name: "Speak & Translate Live",
+      applicationCategory: "UtilitiesApplication",
+      operatingSystem: "Web, iOS, Android, Desktop",
+      description:
+        "Traduttore vocale e testuale in tempo reale per viaggi, lavoro, studio e conversazioni multilingua.",
+      url: "https://speaklivetranslate.it",
+      offers: { "@type": "Offer", price: "0", priceCurrency: "EUR" },
+    },
+    {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      itemListElement: [
+        {
+          "@type": "ListItem",
+          position: 1,
+          name: "Home",
+          item: "https://speaklivetranslate.it/",
+        },
+        {
+          "@type": "ListItem",
+          position: 2,
+          name: "Speak & Translate Live",
+          item: "https://speaklivetranslate.it/",
+        },
+      ],
+    },
+    {
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      mainEntity: HOME_FAQ_DATA.map((f) => ({
+        "@type": "Question",
+        name: f.q,
+        acceptedAnswer: { "@type": "Answer", text: f.a },
+      })),
+    },
+  ];
+
   return (
     <div className="min-h-screen bg-transparent text-[#243428]">
+      <SEOHead jsonLd={seoJsonLd} />
       <div className="mx-auto flex min-h-screen w-full max-w-md flex-col px-4 pb-6 pt-4 sm:max-w-lg">
         <header className="mb-4 rounded-[24px] border border-[#D7E3DA] bg-white/55 px-4 py-4 shadow-[0_8px_24px_rgba(22,42,28,0.08)] backdrop-blur-sm">
           <div className="flex items-start justify-between gap-3">
@@ -1062,6 +1119,7 @@ function App() {
           </section>
         </main>
       </div>
+      <HomeFAQ />
       <SettingsModal />
       <VoiceSetupModal />
     </div>
