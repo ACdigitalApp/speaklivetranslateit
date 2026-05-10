@@ -67,7 +67,7 @@ export function ListeningIndicator({ onToggle }: Props) {
       </div>
 
       <p className="mt-5 text-base text-[hsl(var(--muted-foreground))] max-w-xs text-center leading-relaxed">
-        {status === 'idle' && 'Speak naturally — VoxTranslate listens and translates automatically'}
+        {status === 'idle' && 'Speak naturally — Speak & Translate Live listens and translates automatically'}
         {status === 'listening' && 'Listening...'}
         {status === 'processing' && 'Translating...'}
         {status === 'speaking' && 'Speaking...'}

@@ -16,7 +16,7 @@ export function ConversationView() {
       {messages.length === 0 && (
         <div className="flex flex-col items-center justify-center h-full text-center px-8">
           <p className="text-lg font-medium text-[hsl(var(--muted-foreground))]">Tap the microphone to start translating</p>
-          <p className="text-sm text-[hsl(var(--muted-foreground))] mt-2 opacity-60">Speak naturally — VoxTranslate will detect the language and translate in real-time</p>
+          <p className="text-sm text-[hsl(var(--muted-foreground))] mt-2 opacity-60">Speak naturally — Speak & Translate Live will detect the language and translate in real-time</p>
         </div>
       )}
       <AnimatePresence initial={false}>
