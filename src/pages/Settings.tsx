@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import SEOHead from '@/components/SEOHead';
 import { User, LogOut, Key, Download, Crown, ArrowUpRight, Globe, Smartphone, RotateCcw } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -57,7 +58,9 @@ export default function SettingsPage() {
   const billingProvider = (currentUser as any).billingProvider || activeProvider;
 
   return (
-    <div className="min-h-[100dvh] bg-vox-page">
+    <>
+      <SEOHead noindex title="Impostazioni — Speak & Translate Live" />
+      <div className="min-h-[100dvh] bg-vox-page">
       <div className="max-w-2xl mx-auto px-4 py-6">
         <PageHeader title="Impostazioni" subtitle="Gestisci il tuo profilo e preferenze" />
 
@@ -230,5 +233,6 @@ export default function SettingsPage() {
         </DialogContent>
       </Dialog>
     </div>
+  </>
   );
 }

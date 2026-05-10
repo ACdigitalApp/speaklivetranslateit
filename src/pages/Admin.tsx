@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import SEOHead from '@/components/SEOHead';
 import { useNavigate } from 'react-router-dom';
 import { Shield, Activity, Info, Landmark, Eye, Plus, CreditCard, ScrollText, RefreshCw, Users, DollarSign, TrendingUp, Globe, Smartphone, Store } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -66,7 +67,9 @@ export default function Admin() {
   };
 
   return (
-    <div className="min-h-[100dvh] bg-vox-page">
+    <>
+      <SEOHead noindex title="Admin — Speak & Translate Live" />
+      <div className="min-h-[100dvh] bg-vox-page">
       <div className="max-w-3xl mx-auto px-4 py-6">
         <PageHeader title="Impostazioni Admin" subtitle="Configurazione avanzata, dati bancari e diagnostica" backTo="/admin/users" actions={
           <Button onClick={() => navigate('/admin/users')} size="sm"><Users size={14} className="mr-1" /> Vai a Gestione Utenti</Button>
@@ -413,5 +416,6 @@ function DiagRow({ label, value, ok }: { label: string; value: string; ok: boole
         <span className={`w-2 h-2 rounded-full ${ok ? 'bg-green-500' : 'bg-destructive/60'}`} />
       </div>
     </div>
+  </>
   );
 }

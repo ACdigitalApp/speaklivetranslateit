@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import SEOHead from '@/components/SEOHead';
 import { useNavigate, Link } from 'react-router-dom';
 import { Eye, EyeOff, Languages, ArrowLeft, Mail } from 'lucide-react';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
@@ -45,7 +46,9 @@ export default function Login() {
 
   if (forgotMode) {
     return (
-      <div className="min-h-[100dvh] flex items-center justify-center px-4 py-8 bg-vox-page">
+      <>
+        <SEOHead noindex title="Login — Speak & Translate Live" />
+        <div className="min-h-[100dvh] flex items-center justify-center px-4 py-8 bg-vox-page">
         <Card className="w-full max-w-md shadow-vox-soft border-border">
           <CardHeader className="items-center pb-2">
             <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center mb-3">
@@ -141,5 +144,6 @@ export default function Login() {
         </CardContent>
       </Card>
     </div>
+  </>
   );
 }
