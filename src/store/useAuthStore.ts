@@ -2,6 +2,8 @@ import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import type { AppUser, UserRole } from '@/types/auth';
 import { setAdminCredentials, clearAdminCredentials } from '@/services/adminUsersApi';
+import { supabase } from '@/integrations/supabase/client';
+import type { Session, User } from '@supabase/supabase-js';
 
 export const DEMO_MODE = true; // Always enabled until real auth backend is connected
 
@@ -231,3 +233,157 @@ export const useAuthStore = create<AuthState>()(
   )
 );
 
+
+// ============================================================================
+// TAPPA 1 — Auth reale doppio binario (NON ATTIVO)
+// ----------------------------------------------------------------------------
+// Helper esposti per la futura migrazione a Supabase Auth reale.
+// Nessuna di queste funzioni viene chiamata automaticamente dall'app finché
+// DEMO_MODE = true. Sostituiranno il flusso mock solo nelle tappe successive.
+// ============================================================================
+
+const SUPABASE_ADMIN_EMAIL = 'acdigital.app@gmail.com';
+
+export type SupabaseAuthResult = {
+  ok: boolean;
+  user?: User | null;
+  session?: Session | null;
+  error?: string;
+};
+
+/** Login reale via Supabase Auth. Non usato finché DEMO_MODE = true. */
+export const signInWithSupabase = async (
+  email: string,
+  password: string,
+): Promise<SupabaseAuthResult> => {
+  try {
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email: email.trim().toLowerCase(),
+      password,
+    });
+    if (error) return { ok: false, error: error.message };
+    return { ok: true, user: data.user, session: data.session };
+  } catch (e) {
+    return { ok: false, error: (e as Error).message };
+  }
+};
+
+/** Signup reale via Supabase Auth con redirect post-conferma email. */
+export const signUpWithSupabase = async (
+  email: string,
+  password: string,
+  metadata?: { name?: string; whatsapp?: string },
+): Promise<SupabaseAuthResult> => {
+  try {
+    const redirectTo =
+      typeof window !== 'undefined' ? `${window.location.origin}/` : undefined;
+    const { data, error } = await supabase.auth.signUp({
+      email: email.trim().toLowerCase(),
+      password,
+      options: {
+        emailRedirectTo: redirectTo,
+        data: metadata ?? {},
+      },
+    });
+    if (error) return { ok: false, error: error.message };
+    return { ok: true, user: data.user, session: data.session };
+  } catch (e) {
+    return { ok: false, error: (e as Error).message };
+  }
+};
+
+/** Logout reale via Supabase Auth. */
+export const signOutSupabase = async (): Promise<{ ok: boolean; error?: string }> => {
+  try {
+    const { error } = await supabase.auth.signOut();
+    if (error) return { ok: false, error: error.message };
+    return { ok: true };
+  } catch (e) {
+    return { ok: false, error: (e as Error).message };
+  }
+};
+
+/** Restituisce la sessione Supabase corrente (se presente). */
+export const getSupabaseSession = async (): Promise<Session | null> => {
+  try {
+    const { data } = await supabase.auth.getSession();
+    return data.session ?? null;
+  } catch {
+    return null;
+  }
+};
+
+/**
+ * Inizializza un listener Supabase onAuthStateChange.
+ * NON viene invocato automaticamente: le tappe successive lo monteranno
+ * all'avvio dell'app PRIMA di getSession().
+ */
+export const initializeSupabaseAuthListener = (
+  onChange: (session: Session | null) => void,
+) => {
+  const { data: sub } = supabase.auth.onAuthStateChange((_event, session) => {
+    onChange(session);
+  });
+  return () => sub.subscription.unsubscribe();
+};
+
+// ---------------------------------------------------------------------------
+// Ruoli reali (letti dal DB)
+// ---------------------------------------------------------------------------
+
+/**
+ * Restituisce il ruolo principale di un utente Supabase reale.
+ * Schema: user_roles.user_id = profiles.id, profiles.user_id = auth.users.id.
+ */
+export const fetchUserRole = async (
+  authUserId: string,
+): Promise<UserRole | null> => {
+  try {
+    const { data: profile, error: profileError } = await supabase
+      .from('profiles')
+      .select('id')
+      .eq('user_id', authUserId)
+      .is('deleted_at', null)
+      .maybeSingle();
+    if (profileError || !profile?.id) return null;
+
+    const { data: roles, error: rolesError } = await supabase
+      .from('user_roles')
+      .select('role')
+      .eq('user_id', profile.id);
+    if (rolesError || !roles || roles.length === 0) return 'user';
+
+    if (roles.some((r) => r.role === 'admin')) return 'admin';
+    if (roles.some((r) => r.role === 'user_pro')) return 'user_pro';
+    return 'user';
+  } catch {
+    return null;
+  }
+};
+
+/** True se l'utente Supabase reale ha ruolo admin. */
+export const isSupabaseAdmin = async (authUserId: string): Promise<boolean> => {
+  const role = await fetchUserRole(authUserId);
+  return role === 'admin';
+};
+
+// ---------------------------------------------------------------------------
+// Cleanup storage demo (NON ESEGUITA AUTOMATICAMENTE)
+// ---------------------------------------------------------------------------
+
+/**
+ * Rimuove le chiavi del flusso demo da localStorage.
+ * Da chiamare SOLO nella tappa finale, dopo lo switch ad Auth reale.
+ */
+export const cleanupDemoAuthStorage = () => {
+  if (typeof window === 'undefined') return;
+  try {
+    window.localStorage.removeItem('speakeasy_auth');
+    window.localStorage.removeItem('speakeasy_admin_users');
+  } catch {
+    /* noop */
+  }
+};
+
+// Riferimento per evitare warning di unused import.
+void SUPABASE_ADMIN_EMAIL;
