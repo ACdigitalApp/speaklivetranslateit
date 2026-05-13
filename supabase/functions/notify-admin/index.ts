@@ -14,7 +14,13 @@ const ADMIN_EMAIL = "acdigital.app@gmail.com";
 // Per usare no-reply@acdigitalapp.it verificare prima il dominio su Resend e poi sostituire FROM.
 const FROM = "AC Digital App <onboarding@resend.dev>";
 
-const ALLOWED_EVENTS = new Set(["new_signup", "new_payment", "new_subscription"]);
+const ALLOWED_EVENTS = new Set([
+  "new_signup",
+  "new_payment",
+  "new_subscription",
+  "free_plan_selected",
+  "payment_failed",
+]);
 const ALLOWED_APP_KEYS = new Set(["speak_translate_live", "speaklivetranslate"]);
 const IDEMPOTENCY_RE = /^[A-Za-z0-9._-]{1,120}$/;
 
