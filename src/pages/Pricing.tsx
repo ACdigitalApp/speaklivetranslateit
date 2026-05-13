@@ -91,7 +91,20 @@ export default function Pricing() {
                 <li className="flex gap-2"><Check size={16} className="text-primary shrink-0 mt-0.5" /> 2 traduzioni foto/giorno</li>
                 <li className="flex gap-2"><Check size={16} className="text-primary shrink-0 mt-0.5" /> 1 traduzione PDF/giorno</li>
               </ul>
-              <Button variant="outline" className="w-full" onClick={() => navigate('/')}>Continua con Free</Button>
+              <Button variant="outline" className="w-full" onClick={async () => {
+                if (currentUser?.email) {
+                  const day = new Date().toISOString().slice(0, 10);
+                  const key = `free-${currentUser.id || currentUser.email}-${day}`.replace(/[^A-Za-z0-9._-]/g, '_').slice(0, 120);
+                  const { notifyAdmin } = await import('@/lib/notifyAdmin');
+                  notifyAdmin('free_plan_selected', key, {
+                    email: currentUser.email,
+                    name: currentUser.name,
+                    plan: 'free',
+                    note: 'source=pricing',
+                  });
+                }
+                navigate('/');
+              }}>Continua con Free</Button>
             </CardContent>
           </Card>
 
