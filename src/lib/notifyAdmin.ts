@@ -12,7 +12,12 @@ function getEnvironment(): "production" | "preview" | "demo" {
   return "demo";
 }
 
-export type AdminEventType = "new_signup" | "new_payment" | "new_subscription";
+export type AdminEventType =
+  | "new_signup"
+  | "new_payment"
+  | "new_subscription"
+  | "free_plan_selected"
+  | "payment_failed";
 
 export async function notifyAdmin(
   eventType: AdminEventType,

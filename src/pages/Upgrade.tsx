@@ -152,7 +152,20 @@ export default function Upgrade() {
           <p className="text-xs text-center text-amber-600 mb-4 bg-amber-50 rounded-lg p-3">{unavailableMessage}</p>
         )}
 
-        <Button variant="ghost" className="w-full text-muted-foreground" onClick={() => navigate('/')}>
+        <Button variant="ghost" className="w-full text-muted-foreground" onClick={async () => {
+          if (currentUser?.email) {
+            const day = new Date().toISOString().slice(0, 10);
+            const key = `free-${currentUser.id || currentUser.email}-${day}`.replace(/[^A-Za-z0-9._-]/g, '_').slice(0, 120);
+            const { notifyAdmin } = await import('@/lib/notifyAdmin');
+            notifyAdmin('free_plan_selected', key, {
+              email: currentUser.email,
+              name: currentUser.name,
+              plan: 'free',
+              note: 'source=upgrade',
+            });
+          }
+          navigate('/');
+        }}>
           Continua con Free
         </Button>
 
