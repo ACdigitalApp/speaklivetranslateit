@@ -18,6 +18,8 @@ const ALLOWED_EVENTS = new Set([
   "new_signup",
   "new_payment",
   "new_subscription",
+  "trial_started",
+  "trial_invoice_paid",
   "free_plan_selected",
   "payment_failed",
 ]);
@@ -83,13 +85,17 @@ function buildSubject(p: Payload): string {
     p.eventType === "new_signup"
       ? "Nuova iscrizione"
       : p.eventType === "new_payment"
-      ? "Pagamento riuscito"
+      ? "Nuovo pagamento ricevuto"
       : p.eventType === "new_subscription"
       ? "Nuovo abbonamento"
+      : p.eventType === "trial_started"
+      ? "Nuovo abbonamento trial attivato"
+      : p.eventType === "trial_invoice_paid"
+      ? "Trial attivato - importo oggi 0,00 EUR"
       : p.eventType === "free_plan_selected"
       ? "Piano Free selezionato"
       : p.eventType === "payment_failed"
-      ? "Pagamento fallito"
+      ? "Pagamento non riuscito"
       : p.eventType;
   return `[${p.appName}] ${label}`;
 }
