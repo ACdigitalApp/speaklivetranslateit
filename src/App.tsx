@@ -781,9 +781,15 @@ function App() {
         <header className="mb-4 rounded-[24px] border border-[#D7E3DA] bg-white/55 px-4 py-4 shadow-[0_8px_24px_rgba(22,42,28,0.08)] backdrop-blur-sm">
           <div className="flex items-start justify-between gap-3">
             <div className="shrink-0">
-              <span className="text-sm italic font-medium tracking-wide" style={{ color: '#2D6A4F' }}>
+              <a
+                href="https://acdigitalapp.it"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-sm italic font-medium tracking-wide hover:underline"
+                style={{ color: '#2D6A4F' }}
+              >
                 by AC Digital App
-              </span>
+              </a>
             </div>
 
             <div className="grid shrink-0 grid-cols-4 gap-2">
