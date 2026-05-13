@@ -29,6 +29,24 @@ export default function Pricing() {
   const navigate = useNavigate();
   const currentUser = useAuthStore(s => s.currentUser);
   const currentPlan = currentUser?.plan || 'free';
+  const [loadingPlan, setLoadingPlan] = useState<'monthly' | 'yearly' | null>(null);
+
+  const startStripeCheckout = async (plan: 'monthly' | 'yearly') => {
+    setLoadingPlan(plan);
+    try {
+      const { data, error } = await supabase.functions.invoke('stripe-create-checkout', {
+        body: { plan, email: currentUser?.email },
+      });
+      if (error) throw error;
+      const url = (data as any)?.checkout_url;
+      if (!url) throw new Error('checkout_url mancante');
+      window.location.href = url;
+    } catch (err: any) {
+      console.error('[stripe-checkout] error', err);
+      toast.error('Checkout non disponibile al momento. Riprova tra poco.');
+      setLoadingPlan(null);
+    }
+  };
 
   return (
     <div className="min-h-[100dvh] bg-vox-page">
