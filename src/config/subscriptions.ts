@@ -29,7 +29,7 @@ export const SUBSCRIPTION_CATALOG: SubscriptionCatalogItem[] = [
   },
 ];
 
-export const BILLING_MODE = (import.meta.env.VITE_BILLING_MODE as string) || 'mock';
+export const BILLING_MODE = (import.meta.env.VITE_BILLING_MODE as string) || 'live';
 export const STRIPE_PUBLISHABLE_KEY = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || '';
 export const STRIPE_CUSTOMER_PORTAL_URL = import.meta.env.VITE_STRIPE_CUSTOMER_PORTAL_URL || '';
 
