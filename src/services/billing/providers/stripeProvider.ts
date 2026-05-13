@@ -1,53 +1,49 @@
 import type { BillingProviderInterface, SubscriptionCatalogItem, PurchaseSession, RestorePurchasesResult, EntitlementState } from '@/types/billing';
-import { SUBSCRIPTION_CATALOG, STRIPE_PUBLISHABLE_KEY, STRIPE_CUSTOMER_PORTAL_URL } from '@/config/subscriptions';
+import { SUBSCRIPTION_CATALOG, STRIPE_CUSTOMER_PORTAL_URL } from '@/config/subscriptions';
+import { supabase } from '@/integrations/supabase/client';
 
-const isConfigured = () => !!STRIPE_PUBLISHABLE_KEY;
-
+// Stripe live integration: lo stato "available" è sempre true sul web — la verifica
+// reale dei secrets (STRIPE_SECRET_KEY, price IDs) avviene server-side nell'edge function.
 export const stripeProvider: BillingProviderInterface = {
   provider: 'stripe',
-  get isAvailable() { return isConfigured(); },
+  get isAvailable() { return true; },
 
   async loadProducts(): Promise<SubscriptionCatalogItem[]> {
     return SUBSCRIPTION_CATALOG;
   },
 
   async startPurchase(planId: string): Promise<PurchaseSession> {
-    // In production: POST to /api/billing/stripe/create-checkout-session
-    // with { priceId, successUrl, cancelUrl }
-    // The endpoint creates a Stripe Checkout Session and returns the URL
-    const session: PurchaseSession = {
-      id: Date.now().toString(),
+    // planId atteso: 'premium_monthly' | 'premium_yearly' (legacy) oppure 'monthly' | 'yearly'
+    const plan = planId.includes('yearly') ? 'yearly' : 'monthly';
+
+    const { data, error } = await supabase.functions.invoke('stripe-create-checkout', {
+      body: { plan },
+    });
+    if (error) throw new Error(error.message || 'Stripe checkout failed');
+    const url = (data as any)?.checkout_url;
+    if (!url) throw new Error('checkout_url mancante');
+
+    // Redirect immediato al checkout Stripe.
+    window.location.href = url;
+
+    return {
+      id: (data as any)?.session_id || Date.now().toString(),
       provider: 'stripe',
       planType: planId,
       status: 'pending',
       createdAt: new Date().toISOString(),
     };
-    // TODO: Replace with real Stripe Checkout redirect
-    // const response = await fetch('/api/billing/stripe/create-checkout-session', {
-    //   method: 'POST',
-    //   headers: { 'Content-Type': 'application/json' },
-    //   body: JSON.stringify({
-    //     priceId: catalog.providerProductIds.stripe,
-    //     successUrl: window.location.origin + '/billing/success',
-    //     cancelUrl: window.location.origin + '/billing/cancel',
-    //   }),
-    // });
-    // const { url } = await response.json();
-    // window.location.href = url;
-    throw new Error('Stripe non è ancora configurato. Aggiungi le chiavi API nel file .env.');
   },
 
   async restorePurchases(): Promise<RestorePurchasesResult> {
-    return { success: false, provider: 'stripe', message: 'Il ripristino acquisti non è necessario per Stripe. Lo stato è sincronizzato automaticamente.' };
+    return { success: false, provider: 'stripe', message: 'Il ripristino acquisti non è necessario per Stripe. Lo stato è sincronizzato automaticamente via webhook.' };
   },
 
   async cancelSubscription(): Promise<boolean> {
-    // In production: redirect to customer portal
     throw new Error('Utilizza il Customer Portal di Stripe per gestire il tuo abbonamento.');
   },
 
   async getEntitlements(): Promise<EntitlementState> {
-    // In production: GET /api/billing/stripe/entitlements
     return { isPremium: false, planType: 'free', provider: 'stripe', isTrialing: false };
   },
 

@@ -1,10 +1,13 @@
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Check, Crown, Star, Zap, ArrowLeft } from 'lucide-react';
+import { Check, Crown, Star, Zap, ArrowLeft, Loader2 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { useAuthStore } from '@/store/useAuthStore';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 
 const features = [
   { name: 'Traduzioni vocali live', free: '5/giorno', premium: 'Illimitate' },
@@ -26,6 +29,24 @@ export default function Pricing() {
   const navigate = useNavigate();
   const currentUser = useAuthStore(s => s.currentUser);
   const currentPlan = currentUser?.plan || 'free';
+  const [loadingPlan, setLoadingPlan] = useState<'monthly' | 'yearly' | null>(null);
+
+  const startStripeCheckout = async (plan: 'monthly' | 'yearly') => {
+    setLoadingPlan(plan);
+    try {
+      const { data, error } = await supabase.functions.invoke('stripe-create-checkout', {
+        body: { plan, email: currentUser?.email },
+      });
+      if (error) throw error;
+      const url = (data as any)?.checkout_url;
+      if (!url) throw new Error('checkout_url mancante');
+      window.location.href = url;
+    } catch (err: any) {
+      console.error('[stripe-checkout] error', err);
+      toast.error('Checkout non disponibile al momento. Riprova tra poco.');
+      setLoadingPlan(null);
+    }
+  };
 
   return (
     <div className="min-h-[100dvh] bg-vox-page">
@@ -90,7 +111,10 @@ export default function Pricing() {
                 <li className="flex gap-2"><Check size={16} className="text-primary shrink-0 mt-0.5" /> Cronologia completa</li>
                 <li className="flex gap-2"><Check size={16} className="text-primary shrink-0 mt-0.5" /> Supporto prioritario</li>
               </ul>
-              <Button className="w-full" onClick={() => navigate('/checkout?plan=premium_monthly')}>Passa al Mensile</Button>
+              <Button className="w-full" disabled={loadingPlan !== null} onClick={() => startStripeCheckout('monthly')}>
+                {loadingPlan === 'monthly' ? <Loader2 size={16} className="mr-2 animate-spin" /> : null}
+                Passa al Mensile
+              </Button>
             </CardContent>
           </Card>
 
@@ -113,7 +137,10 @@ export default function Pricing() {
                 <li className="flex gap-2"><Check size={16} className="text-primary shrink-0 mt-0.5" /> Risparmi €45,89/anno</li>
                 <li className="flex gap-2"><Check size={16} className="text-primary shrink-0 mt-0.5" /> Funzionalità esclusive</li>
               </ul>
-              <Button className="w-full" onClick={() => navigate('/checkout?plan=premium_yearly')}>Passa all'Annuale</Button>
+              <Button className="w-full" disabled={loadingPlan !== null} onClick={() => startStripeCheckout('yearly')}>
+                {loadingPlan === 'yearly' ? <Loader2 size={16} className="mr-2 animate-spin" /> : null}
+                Passa all'Annuale
+              </Button>
             </CardContent>
           </Card>
         </div>
