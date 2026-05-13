@@ -84,7 +84,13 @@ function buildSubject(p: Payload): string {
       ? "Nuova iscrizione"
       : p.eventType === "new_payment"
       ? "Pagamento riuscito"
-      : "Nuovo abbonamento";
+      : p.eventType === "new_subscription"
+      ? "Nuovo abbonamento"
+      : p.eventType === "free_plan_selected"
+      ? "Piano Free selezionato"
+      : p.eventType === "payment_failed"
+      ? "Pagamento fallito"
+      : p.eventType;
   return `[${p.appName}] ${label}`;
 }
 
