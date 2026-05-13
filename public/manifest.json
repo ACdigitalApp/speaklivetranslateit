@@ -3,6 +3,8 @@
   "short_name": "Speak Live",
   "description": "Traduttore vocale e testuale in tempo reale by AC Digital App.",
   "start_url": "/",
+  "id": "/",
+  "scope": "/",
   "display": "standalone",
   "theme_color": "#2D6A4F",
   "background_color": "#ffffff",
