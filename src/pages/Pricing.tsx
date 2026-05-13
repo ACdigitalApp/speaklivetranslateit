@@ -65,7 +65,7 @@ export default function Pricing() {
             Traduzioni vocali, foto e PDF senza limiti
           </p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
-            <Button size="lg" onClick={() => navigate('/checkout?plan=trial')}>
+            <Button size="lg" onClick={() => startStripeCheckout('monthly')}>
               <Zap size={18} className="mr-2" /> Prova 7 giorni gratis
             </Button>
             <Button size="lg" variant="outline" onClick={() => document.getElementById('plans')?.scrollIntoView({ behavior: 'smooth' })}>

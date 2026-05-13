@@ -19,7 +19,7 @@ import { toast } from 'sonner';
 export default function SettingsPage() {
   const navigate = useNavigate();
   const { currentUser, logout } = useAuthStore();
-  const { activeProvider, isMock, platform, restorePurchases, loading } = useBilling();
+  const { activeProvider, isMock, platform, restorePurchases, loading, startPurchase } = useBilling();
   const [pwOpen, setPwOpen] = useState(false);
   const [pwForm, setPwForm] = useState({ current: '', next: '', confirm: '' });
   const [pwError, setPwError] = useState('');
@@ -146,7 +146,7 @@ export default function SettingsPage() {
                   </Button>
                 )}
                 {currentUser.plan === 'premium_monthly' && (
-                  <Button onClick={() => navigate('/checkout?plan=premium_yearly')} variant="outline" className="flex-1">
+                  <Button onClick={() => startPurchase('premium_yearly')} variant="outline" className="flex-1" disabled={loading}>
                     <ArrowUpRight size={16} className="mr-2" /> Upgrade Annuale
                   </Button>
                 )}
