@@ -1,10 +1,13 @@
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Check, Crown, Star, Zap, ArrowLeft } from 'lucide-react';
+import { Check, Crown, Star, Zap, ArrowLeft, Loader2 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { useAuthStore } from '@/store/useAuthStore';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 
 const features = [
   { name: 'Traduzioni vocali live', free: '5/giorno', premium: 'Illimitate' },
