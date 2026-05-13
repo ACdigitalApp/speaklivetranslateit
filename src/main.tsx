@@ -33,6 +33,9 @@ createRoot(document.getElementById("root")!).render(
       <Route path="/register" element={<PrivateRoute title="Registrazione — Speak & Translate Live"><Register /></PrivateRoute>} />
       <Route path="/pricing" element={<Pricing />} />
       <Route path="/upgrade" element={<Upgrade />} />
+      <Route path="/privacy" element={<Privacy />} />
+      <Route path="/supporto" element={<Supporto />} />
+      <Route path="/contatti" element={<Contatti />} />
       <Route path="/checkout" element={<AuthGuard><PrivateRoute title="Checkout — Speak & Translate Live"><Checkout /></PrivateRoute></AuthGuard>} />
       <Route path="/success" element={<PrivateRoute title="Pagamento completato — Speak & Translate Live"><Success /></PrivateRoute>} />
       <Route path="/cancel" element={<PrivateRoute title="Checkout annullato — Speak & Translate Live"><Cancel /></PrivateRoute>} />
