@@ -112,7 +112,9 @@ Deno.serve(async (req) => {
           const subId = typeof session.subscription === "string" ? session.subscription : session.subscription.id;
           const sub = await stripe.subscriptions.retrieve(subId);
           await upsertSubscription(sub);
-          await notifyAdminServer("new_subscription", `sub-${sub.id}`, {
+          const isTrialing = sub.status === "trialing" || !!sub.trial_end;
+          const evtType = isTrialing ? "trial_started" : "new_subscription";
+          await notifyAdminServer(evtType, `${evtType}-${sub.id}`, {
             email: session.customer_email ?? session.customer_details?.email,
             plan: sub.metadata?.plan ?? session.metadata?.plan,
             subscription_status: sub.status,
