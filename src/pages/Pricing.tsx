@@ -93,7 +93,10 @@ export default function Pricing() {
                 <li className="flex gap-2"><Check size={16} className="text-primary shrink-0 mt-0.5" /> Cronologia completa</li>
                 <li className="flex gap-2"><Check size={16} className="text-primary shrink-0 mt-0.5" /> Supporto prioritario</li>
               </ul>
-              <Button className="w-full" onClick={() => navigate('/checkout?plan=premium_monthly')}>Passa al Mensile</Button>
+              <Button className="w-full" disabled={loadingPlan !== null} onClick={() => startStripeCheckout('monthly')}>
+                {loadingPlan === 'monthly' ? <Loader2 size={16} className="mr-2 animate-spin" /> : null}
+                Passa al Mensile
+              </Button>
             </CardContent>
           </Card>
 
@@ -116,7 +119,10 @@ export default function Pricing() {
                 <li className="flex gap-2"><Check size={16} className="text-primary shrink-0 mt-0.5" /> Risparmi €45,89/anno</li>
                 <li className="flex gap-2"><Check size={16} className="text-primary shrink-0 mt-0.5" /> Funzionalità esclusive</li>
               </ul>
-              <Button className="w-full" onClick={() => navigate('/checkout?plan=premium_yearly')}>Passa all'Annuale</Button>
+              <Button className="w-full" disabled={loadingPlan !== null} onClick={() => startStripeCheckout('yearly')}>
+                {loadingPlan === 'yearly' ? <Loader2 size={16} className="mr-2 animate-spin" /> : null}
+                Passa all'Annuale
+              </Button>
             </CardContent>
           </Card>
         </div>
