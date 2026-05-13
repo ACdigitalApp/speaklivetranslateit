@@ -33,10 +33,14 @@ export default function Upgrade() {
       navigate(`/checkout?plan=${planId}`);
       return;
     }
-    const result = await startPurchase(planId);
-    if (result?.status === 'completed') {
-      toast.success('Acquisto completato!');
-      navigate('/settings');
+    try {
+      const result = await startPurchase(planId);
+      if (result?.status === 'completed') {
+        toast.success('Acquisto completato!');
+        navigate('/settings');
+      }
+    } catch (err: any) {
+      toast.error(err?.message || 'Errore apertura checkout. Riprova.');
     }
   };
 
