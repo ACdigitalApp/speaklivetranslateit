@@ -19,7 +19,7 @@ import { toast } from 'sonner';
 export default function SettingsPage() {
   const navigate = useNavigate();
   const { currentUser, logout } = useAuthStore();
-  const { activeProvider, isMock, platform, restorePurchases, loading } = useBilling();
+  const { activeProvider, isMock, platform, restorePurchases, loading, startPurchase } = useBilling();
   const [pwOpen, setPwOpen] = useState(false);
   const [pwForm, setPwForm] = useState({ current: '', next: '', confirm: '' });
   const [pwError, setPwError] = useState('');
