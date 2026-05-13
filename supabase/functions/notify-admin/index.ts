@@ -18,6 +18,8 @@ const ALLOWED_EVENTS = new Set([
   "new_signup",
   "new_payment",
   "new_subscription",
+  "trial_started",
+  "trial_invoice_paid",
   "free_plan_selected",
   "payment_failed",
 ]);
