@@ -2,6 +2,8 @@ import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import type { AppUser, UserRole } from '@/types/auth';
 import { setAdminCredentials, clearAdminCredentials } from '@/services/adminUsersApi';
+import { supabase } from '@/integrations/supabase/client';
+import type { Session, User } from '@supabase/supabase-js';
 
 export const DEMO_MODE = true; // Always enabled until real auth backend is connected
 
