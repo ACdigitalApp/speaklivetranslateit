@@ -132,14 +132,22 @@ Deno.serve(async (req) => {
       }
       case "invoice.paid": {
         const invoice = event.data.object as Stripe.Invoice;
-        await notifyAdminServer("new_payment", `inv-${invoice.id}`, {
-          email: invoice.customer_email,
-          plan: (invoice.lines.data[0]?.price?.recurring?.interval) === "year" ? "yearly" : "monthly",
-          amount: (invoice.amount_paid ?? 0) / 100,
-          currency: (invoice.currency || "eur").toUpperCase(),
-          subscription_status: "active",
-          stripe_event_id: event.id,
-        });
+        const amount = (invoice.amount_paid ?? 0) / 100;
+        const plan = (invoice.lines.data[0]?.price?.recurring?.interval) === "year" ? "yearly" : "monthly";
+        if (amount <= 0) {
+          // Trial: importo oggi 0 EUR. Non comunicare come "pagamento ricevuto".
+          // Solo log; trial_started è già stato inviato su checkout.session.completed.
+          console.log(`[stripe-webhook] invoice.paid amount=0 (trial) inv=${invoice.id} - skip new_payment`);
+        } else {
+          await notifyAdminServer("new_payment", `inv-${invoice.id}`, {
+            email: invoice.customer_email,
+            plan,
+            amount,
+            currency: (invoice.currency || "eur").toUpperCase(),
+            subscription_status: "active",
+            stripe_event_id: event.id,
+          });
+        }
         break;
       }
       case "invoice.payment_failed": {
