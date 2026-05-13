@@ -11,6 +11,8 @@ import SettingsPage from "./pages/Settings.tsx";
 import Pricing from "./pages/Pricing.tsx";
 import Upgrade from "./pages/Upgrade.tsx";
 import Checkout from "./pages/Checkout.tsx";
+import Success from "./pages/Success.tsx";
+import Cancel from "./pages/Cancel.tsx";
 import NotFound from "./pages/NotFound.tsx";
 import { AuthGuard } from "./components/auth/AuthGuard.tsx";
 import { VisitTracker } from "./components/VisitTracker.tsx";
@@ -29,6 +31,8 @@ createRoot(document.getElementById("root")!).render(
       <Route path="/pricing" element={<Pricing />} />
       <Route path="/upgrade" element={<Upgrade />} />
       <Route path="/checkout" element={<AuthGuard><PrivateRoute title="Checkout — Speak & Translate Live"><Checkout /></PrivateRoute></AuthGuard>} />
+      <Route path="/success" element={<PrivateRoute title="Pagamento completato — Speak & Translate Live"><Success /></PrivateRoute>} />
+      <Route path="/cancel" element={<PrivateRoute title="Checkout annullato — Speak & Translate Live"><Cancel /></PrivateRoute>} />
       <Route path="/settings" element={<AuthGuard><PrivateRoute title="Impostazioni — Speak & Translate Live"><SettingsPage /></PrivateRoute></AuthGuard>} />
       <Route path="/admin" element={<AuthGuard requiredRole="admin"><PrivateRoute title="Admin — Speak & Translate Live"><Admin /></PrivateRoute></AuthGuard>} />
       <Route path="/admin/users" element={<AuthGuard requiredRole="admin"><PrivateRoute title="Admin Utenti — Speak & Translate Live"><AdminUsers /></PrivateRoute></AuthGuard>} />
