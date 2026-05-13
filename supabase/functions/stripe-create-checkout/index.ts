@@ -13,9 +13,9 @@ Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
 
   try {
-    const stripeKey = Deno.env.get("STRIPE_SECRET_KEY");
-    const priceMonthly = Deno.env.get("STRIPE_PRICE_ID_MONTHLY");
-    const priceYearly = Deno.env.get("STRIPE_PRICE_ID_YEARLY");
+    const stripeKey = Deno.env.get("STRIPE_SECRET_KEY")?.trim();
+    const priceMonthly = Deno.env.get("STRIPE_PRICE_ID_MONTHLY")?.trim();
+    const priceYearly = Deno.env.get("STRIPE_PRICE_ID_YEARLY")?.trim();
     const siteUrl = Deno.env.get("SITE_URL") || "https://speaklivetranslate.it";
 
     if (!stripeKey || !priceMonthly || !priceYearly) {
