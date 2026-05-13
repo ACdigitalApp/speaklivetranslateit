@@ -8,6 +8,9 @@ Disallow: /users
 Disallow: /users/
 Disallow: /login
 Disallow: /register
+Disallow: /checkout
+Disallow: /success
+Disallow: /cancel
 
 User-agent: GPTBot
 Allow: /
