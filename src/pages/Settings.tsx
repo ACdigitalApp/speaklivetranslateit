@@ -146,7 +146,7 @@ export default function SettingsPage() {
                   </Button>
                 )}
                 {currentUser.plan === 'premium_monthly' && (
-                  <Button onClick={() => navigate('/checkout?plan=premium_yearly')} variant="outline" className="flex-1">
+                  <Button onClick={() => startPurchase('premium_yearly')} variant="outline" className="flex-1" disabled={loading}>
                     <ArrowUpRight size={16} className="mr-2" /> Upgrade Annuale
                   </Button>
                 )}
