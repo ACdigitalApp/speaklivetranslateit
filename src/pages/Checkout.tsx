@@ -187,7 +187,20 @@ export default function Checkout() {
             <Button type="submit" className="w-full" size="lg" disabled={loading}>
               {loading ? 'Elaborazione...' : isTrial ? 'Attiva prova gratuita' : 'Conferma pagamento'}
             </Button>
-            <Button type="button" variant="ghost" className="w-full text-muted-foreground" onClick={() => navigate('/')}>
+            <Button type="button" variant="ghost" className="w-full text-muted-foreground" onClick={() => {
+              const email = currentUser?.email || form.email;
+              if (email) {
+                const day = new Date().toISOString().slice(0, 10);
+                const key = `free-${currentUser?.id || email}-${day}`.replace(/[^A-Za-z0-9._-]/g, '_').slice(0, 120);
+                notifyAdmin('free_plan_selected', key, {
+                  email,
+                  name: currentUser?.name || form.name,
+                  plan: 'free',
+                  note: 'source=checkout',
+                });
+              }
+              navigate('/');
+            }}>
               Continua con Free
             </Button>
           </div>
