@@ -308,28 +308,10 @@ export default function AdminUsers() {
           <SummaryCard label="Scaduti" value={revenue.expired.toString()} icon={<UsersIcon size={16} />} />
         </div>
 
-        {/* Cross-app Revenue Dashboard */}
-        <Card className="mb-6 border-primary/20 bg-primary/5">
-          <CardHeader className="pb-3">
-            <CardTitle className="text-base flex items-center gap-2">
-              <BarChart3 size={18} className="text-primary" />
-              Incassi Totali — Tutte le App ACdigitalApp
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4 mb-4">
-              <AppRevenueCard name="Speak & Translate Live" domain="speaklivetranslate.it" amount={revenue.totalRevenue} users={users.length} color="green" loading={false} />
-              <AppRevenueCard name="Gestione Password" domain="gestionepassword.it" amount={crossApp.gestionepassword.amount} users={crossApp.gestionepassword.users} color="blue" loading={crossApp.gestionepassword.loading} />
-              <AppRevenueCard name="Librifree" domain="librifree.it" amount={crossApp.librifree.amount} users={crossApp.librifree.users} color="orange" loading={crossApp.librifree.loading} />
-              <AppRevenueCard name="Gestione Scadenze" domain="gestionescadenze.app" amount={crossApp.gestionescadenze.amount} users={crossApp.gestionescadenze.users} color="purple" loading={crossApp.gestionescadenze.loading} />
-              <AppRevenueCard name="Rosario Settimanale" domain="rosariosettimanale.it" amount={crossApp.rosariosettimanale.amount} users={crossApp.rosariosettimanale.users} color="rose" loading={crossApp.rosariosettimanale.loading} />
-            </div>
-            <div className="flex items-center justify-between bg-primary text-primary-foreground rounded-lg px-4 py-3">
-              <span className="font-bold text-sm">💰 TOTALE GENERALE ACdigitalApp</span>
-              <span className="font-bold text-lg font-mono">€{(revenue.totalRevenue + crossApp.gestionepassword.amount + crossApp.librifree.amount + crossApp.gestionescadenze.amount + crossApp.rosariosettimanale.amount).toFixed(2)}</span>
-            </div>
-          </CardContent>
-        </Card>
+        {/* Link al portale centrale AC Digital App */}
+        <p className="text-xs text-muted-foreground mb-6">
+          Scopri tutte le app su <a href="https://acdigitalapp.it" target="_blank" rel="noopener noreferrer" className="underline text-primary">AC Digital App</a>.
+        </p>
 
         <AdminNotificationsCard />
 
