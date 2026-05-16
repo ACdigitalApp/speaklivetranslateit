@@ -1,5 +1,5 @@
 import { useState, useCallback, useMemo, useEffect, useRef } from 'react';
-import { Plus, RefreshCw, Key, Trash2, Search, DollarSign, TrendingUp, Users as UsersIcon, CreditCard, Globe, Smartphone, BarChart3, Save } from 'lucide-react';
+import { Plus, RefreshCw, Key, Trash2, Search, DollarSign, TrendingUp, Users as UsersIcon, CreditCard, Globe, Smartphone, Save } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -66,16 +66,6 @@ function ProviderBadge({ provider }: { provider: BillingProvider }) {
   );
 }
 
-// URL API altre app ACdigitalApp
-const CROSS_APP_APIS = {
-  gestionepassword: 'https://gestione-password-backend.up.railway.app/api/admin/revenue',
-  librifree: 'https://librifree-backend.up.railway.app/api/admin/revenue',
-  gestionescadenze: 'https://gestionescadenze-backend.up.railway.app/api/admin/revenue',
-  rosariosettimanale: 'https://rosariosettimanale-backend.up.railway.app/api/admin/revenue',
-};
-
-type AppRevenue = { amount: number; users: number; loading: boolean };
-
 export default function AdminUsers() {
   const currentUser = useAuthStore(s => s.currentUser);
   const { toast } = useToast();
@@ -83,12 +73,6 @@ export default function AdminUsers() {
   const [refreshing, setRefreshing] = useState(false);
   const [loadingUsers, setLoadingUsers] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
-  const [crossApp, setCrossApp] = useState<Record<string, AppRevenue>>({
-    gestionepassword: { amount: 0, users: 0, loading: true },
-    librifree: { amount: 0, users: 0, loading: true },
-    gestionescadenze: { amount: 0, users: 0, loading: true },
-    rosariosettimanale: { amount: 0, users: 0, loading: true },
-  });
   const [userFormOpen, setUserFormOpen] = useState(false);
   const [pwFormOpen, setPwFormOpen] = useState(false);
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
@@ -103,24 +87,6 @@ export default function AdminUsers() {
   const [filterStatus, setFilterStatus] = useState<string>('all');
   const visitsRef = useRef<VisitsTotalCardHandle>(null);
   const [, setHasPendingChanges] = useState(false);
-
-  // Carica incassi altre app all'avvio
-  const fetchCrossAppRevenue = useCallback(async () => {
-    const apps = Object.keys(CROSS_APP_APIS) as (keyof typeof CROSS_APP_APIS)[];
-    for (const app of apps) {
-      try {
-        const res = await fetch(CROSS_APP_APIS[app], { signal: AbortSignal.timeout(5000) });
-        if (res.ok) {
-          const data = await res.json();
-          setCrossApp(prev => ({ ...prev, [app]: { amount: data.total_revenue || 0, users: data.total_users || 0, loading: false } }));
-        } else throw new Error('non-ok');
-      } catch {
-        setCrossApp(prev => ({ ...prev, [app]: { amount: 0, users: 0, loading: false } }));
-      }
-    }
-  }, []);
-
-  useEffect(() => { void fetchCrossAppRevenue().catch(() => undefined); }, [fetchCrossAppRevenue]);
 
   const [editingId, setEditingId] = useState<string | null>(null);
   const [draft, setDraft] = useState<AppUser | null>(null);
@@ -185,12 +151,11 @@ export default function AdminUsers() {
 
   const handleRefresh = useCallback(async () => {
     setRefreshing(true);
-    void fetchCrossAppRevenue().catch(() => undefined);
     visitsRef.current?.refresh();
     const list = await loadUsers(true);
     setRefreshing(false);
     toast({ title: '✅ Lista aggiornata', description: `${list.length} utenti caricati dal backend` });
-  }, [toast, fetchCrossAppRevenue, loadUsers]);
+  }, [toast, loadUsers]);
 
   const revenue = useMemo(() => {
     const now = new Date();
@@ -343,28 +308,10 @@ export default function AdminUsers() {
           <SummaryCard label="Scaduti" value={revenue.expired.toString()} icon={<UsersIcon size={16} />} />
         </div>
 
-        {/* Cross-app Revenue Dashboard */}
-        <Card className="mb-6 border-primary/20 bg-primary/5">
-          <CardHeader className="pb-3">
-            <CardTitle className="text-base flex items-center gap-2">
-              <BarChart3 size={18} className="text-primary" />
-              Incassi Totali — Tutte le App ACdigitalApp
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4 mb-4">
-              <AppRevenueCard name="Speak & Translate Live" domain="speaklivetranslate.it" amount={revenue.totalRevenue} users={users.length} color="green" loading={false} />
-              <AppRevenueCard name="Gestione Password" domain="gestionepassword.it" amount={crossApp.gestionepassword.amount} users={crossApp.gestionepassword.users} color="blue" loading={crossApp.gestionepassword.loading} />
-              <AppRevenueCard name="Librifree" domain="librifree.it" amount={crossApp.librifree.amount} users={crossApp.librifree.users} color="orange" loading={crossApp.librifree.loading} />
-              <AppRevenueCard name="Gestione Scadenze" domain="gestionescadenze.app" amount={crossApp.gestionescadenze.amount} users={crossApp.gestionescadenze.users} color="purple" loading={crossApp.gestionescadenze.loading} />
-              <AppRevenueCard name="Rosario Settimanale" domain="rosariosettimanale.it" amount={crossApp.rosariosettimanale.amount} users={crossApp.rosariosettimanale.users} color="rose" loading={crossApp.rosariosettimanale.loading} />
-            </div>
-            <div className="flex items-center justify-between bg-primary text-primary-foreground rounded-lg px-4 py-3">
-              <span className="font-bold text-sm">💰 TOTALE GENERALE ACdigitalApp</span>
-              <span className="font-bold text-lg font-mono">€{(revenue.totalRevenue + crossApp.gestionepassword.amount + crossApp.librifree.amount + crossApp.gestionescadenze.amount + crossApp.rosariosettimanale.amount).toFixed(2)}</span>
-            </div>
-          </CardContent>
-        </Card>
+        {/* Link al portale centrale AC Digital App */}
+        <p className="text-xs text-muted-foreground mb-6">
+          Scopri tutte le app su <a href="https://acdigitalapp.it" target="_blank" rel="noopener noreferrer" className="underline text-primary">AC Digital App</a>.
+        </p>
 
         <AdminNotificationsCard />
 
@@ -682,36 +629,3 @@ function SummaryCard({ label, value, icon, highlight }: { label: string; value: 
   );
 }
 
-function AppRevenueCard({ name, domain, amount, users, color, loading }: { name: string; domain: string; amount: number; users: number; color: string; loading: boolean }) {
-  const colorMap: Record<string, string> = {
-    green: 'border-green-200 bg-green-50',
-    blue: 'border-blue-200 bg-blue-50',
-    orange: 'border-orange-200 bg-orange-50',
-    purple: 'border-purple-200 bg-purple-50',
-    rose: 'border-rose-200 bg-rose-50',
-  };
-  const textMap: Record<string, string> = {
-    green: 'text-green-700',
-    blue: 'text-blue-700',
-    orange: 'text-orange-700',
-    purple: 'text-purple-700',
-    rose: 'text-rose-700',
-  };
-  return (
-    <div className={`rounded-lg border p-3 ${colorMap[color]}`}>
-      <p className={`font-semibold text-sm ${textMap[color]}`}>{name}</p>
-      <p className="text-xs text-muted-foreground mb-2">{domain}</p>
-      {loading ? (
-        <div className="flex items-center gap-2 py-1">
-          <div className={`w-3 h-3 border-2 border-t-transparent rounded-full animate-spin ${textMap[color].replace('text-', 'border-')}`} />
-          <span className="text-xs text-muted-foreground">Caricamento...</span>
-        </div>
-      ) : (
-        <>
-          <p className={`text-xl font-bold font-mono ${textMap[color]}`}>€{amount.toFixed(2)}</p>
-          <p className="text-xs text-muted-foreground">{users} utenti</p>
-        </>
-      )}
-    </div>
-  );
-}
