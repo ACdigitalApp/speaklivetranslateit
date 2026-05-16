@@ -66,8 +66,6 @@ function ProviderBadge({ provider }: { provider: BillingProvider }) {
   );
 }
 
-type AppRevenue = { amount: number; users: number; loading: boolean };
-
 export default function AdminUsers() {
   const currentUser = useAuthStore(s => s.currentUser);
   const { toast } = useToast();
@@ -75,6 +73,20 @@ export default function AdminUsers() {
   const [refreshing, setRefreshing] = useState(false);
   const [loadingUsers, setLoadingUsers] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
+  const [userFormOpen, setUserFormOpen] = useState(false);
+  const [pwFormOpen, setPwFormOpen] = useState(false);
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+  const [paymentDetailOpen, setPaymentDetailOpen] = useState(false);
+  const [pwFields, setPwFields] = useState({ next: '', confirm: '' });
+  const [pwError, setPwError] = useState('');
+  const [selectedUser, setSelectedUser] = useState<AppUser | null>(null);
+  const [isNew, setIsNew] = useState(false);
+  const [form, setForm] = useState({ name: '', email: '', role: 'user' as UserRole, whatsapp: '' });
+  const [searchQuery, setSearchQuery] = useState('');
+  const [filterPlan, setFilterPlan] = useState<string>('all');
+  const [filterStatus, setFilterStatus] = useState<string>('all');
+  const visitsRef = useRef<VisitsTotalCardHandle>(null);
+  const [, setHasPendingChanges] = useState(false);
 
   const [editingId, setEditingId] = useState<string | null>(null);
   const [draft, setDraft] = useState<AppUser | null>(null);
