@@ -151,12 +151,11 @@ export default function AdminUsers() {
 
   const handleRefresh = useCallback(async () => {
     setRefreshing(true);
-    void fetchCrossAppRevenue().catch(() => undefined);
     visitsRef.current?.refresh();
     const list = await loadUsers(true);
     setRefreshing(false);
     toast({ title: '✅ Lista aggiornata', description: `${list.length} utenti caricati dal backend` });
-  }, [toast, fetchCrossAppRevenue, loadUsers]);
+  }, [toast, loadUsers]);
 
   const revenue = useMemo(() => {
     const now = new Date();
