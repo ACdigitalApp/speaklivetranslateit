@@ -66,14 +66,6 @@ function ProviderBadge({ provider }: { provider: BillingProvider }) {
   );
 }
 
-// URL API altre app ACdigitalApp
-const CROSS_APP_APIS = {
-  gestionepassword: 'https://gestione-password-backend.up.railway.app/api/admin/revenue',
-  librifree: 'https://librifree-backend.up.railway.app/api/admin/revenue',
-  gestionescadenze: 'https://gestionescadenze-backend.up.railway.app/api/admin/revenue',
-  rosariosettimanale: 'https://rosariosettimanale-backend.up.railway.app/api/admin/revenue',
-};
-
 type AppRevenue = { amount: number; users: number; loading: boolean };
 
 export default function AdminUsers() {
@@ -83,44 +75,6 @@ export default function AdminUsers() {
   const [refreshing, setRefreshing] = useState(false);
   const [loadingUsers, setLoadingUsers] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
-  const [crossApp, setCrossApp] = useState<Record<string, AppRevenue>>({
-    gestionepassword: { amount: 0, users: 0, loading: true },
-    librifree: { amount: 0, users: 0, loading: true },
-    gestionescadenze: { amount: 0, users: 0, loading: true },
-    rosariosettimanale: { amount: 0, users: 0, loading: true },
-  });
-  const [userFormOpen, setUserFormOpen] = useState(false);
-  const [pwFormOpen, setPwFormOpen] = useState(false);
-  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
-  const [paymentDetailOpen, setPaymentDetailOpen] = useState(false);
-  const [pwFields, setPwFields] = useState({ next: '', confirm: '' });
-  const [pwError, setPwError] = useState('');
-  const [selectedUser, setSelectedUser] = useState<AppUser | null>(null);
-  const [isNew, setIsNew] = useState(false);
-  const [form, setForm] = useState({ name: '', email: '', role: 'user' as UserRole, whatsapp: '' });
-  const [searchQuery, setSearchQuery] = useState('');
-  const [filterPlan, setFilterPlan] = useState<string>('all');
-  const [filterStatus, setFilterStatus] = useState<string>('all');
-  const visitsRef = useRef<VisitsTotalCardHandle>(null);
-  const [, setHasPendingChanges] = useState(false);
-
-  // Carica incassi altre app all'avvio
-  const fetchCrossAppRevenue = useCallback(async () => {
-    const apps = Object.keys(CROSS_APP_APIS) as (keyof typeof CROSS_APP_APIS)[];
-    for (const app of apps) {
-      try {
-        const res = await fetch(CROSS_APP_APIS[app], { signal: AbortSignal.timeout(5000) });
-        if (res.ok) {
-          const data = await res.json();
-          setCrossApp(prev => ({ ...prev, [app]: { amount: data.total_revenue || 0, users: data.total_users || 0, loading: false } }));
-        } else throw new Error('non-ok');
-      } catch {
-        setCrossApp(prev => ({ ...prev, [app]: { amount: 0, users: 0, loading: false } }));
-      }
-    }
-  }, []);
-
-  useEffect(() => { void fetchCrossAppRevenue().catch(() => undefined); }, [fetchCrossAppRevenue]);
 
   const [editingId, setEditingId] = useState<string | null>(null);
   const [draft, setDraft] = useState<AppUser | null>(null);
