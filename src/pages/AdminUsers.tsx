@@ -629,36 +629,3 @@ function SummaryCard({ label, value, icon, highlight }: { label: string; value: 
   );
 }
 
-function AppRevenueCard({ name, domain, amount, users, color, loading }: { name: string; domain: string; amount: number; users: number; color: string; loading: boolean }) {
-  const colorMap: Record<string, string> = {
-    green: 'border-green-200 bg-green-50',
-    blue: 'border-blue-200 bg-blue-50',
-    orange: 'border-orange-200 bg-orange-50',
-    purple: 'border-purple-200 bg-purple-50',
-    rose: 'border-rose-200 bg-rose-50',
-  };
-  const textMap: Record<string, string> = {
-    green: 'text-green-700',
-    blue: 'text-blue-700',
-    orange: 'text-orange-700',
-    purple: 'text-purple-700',
-    rose: 'text-rose-700',
-  };
-  return (
-    <div className={`rounded-lg border p-3 ${colorMap[color]}`}>
-      <p className={`font-semibold text-sm ${textMap[color]}`}>{name}</p>
-      <p className="text-xs text-muted-foreground mb-2">{domain}</p>
-      {loading ? (
-        <div className="flex items-center gap-2 py-1">
-          <div className={`w-3 h-3 border-2 border-t-transparent rounded-full animate-spin ${textMap[color].replace('text-', 'border-')}`} />
-          <span className="text-xs text-muted-foreground">Caricamento...</span>
-        </div>
-      ) : (
-        <>
-          <p className={`text-xl font-bold font-mono ${textMap[color]}`}>€{amount.toFixed(2)}</p>
-          <p className="text-xs text-muted-foreground">{users} utenti</p>
-        </>
-      )}
-    </div>
-  );
-}
