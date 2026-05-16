@@ -130,10 +130,10 @@ export const useAuthStore = create<AuthState>()(
 
     const normalizedEmail = email.trim().toLowerCase();
     const ADMIN_EMAIL = 'acdigital.app@gmail.com';
-    const ADMIN_PASSWORD = 'acdigital2026';
 
     if (normalizedEmail === ADMIN_EMAIL) {
-      if (_password !== ADMIN_PASSWORD) return false;
+      // Real admin password is validated server-side via Supabase Auth.
+      // Demo mock login only requires a non-empty password here.
       const existing = getMockUsers().find(u => u.email.toLowerCase() === ADMIN_EMAIL);
       const adminUser: AppUser = {
         ...MOCK_ADMIN,
