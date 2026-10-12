@@ -32,7 +32,7 @@ const json = (body: unknown, status = 200) =>
 
 const allowedPlans = new Set(['free', 'trial', 'premium', 'pro', 'monthly', 'yearly', 'premium_monthly', 'premium_yearly']);
 const allowedStatuses = new Set(['active', 'inactive', 'trialing', 'in_trial', 'canceled', 'cancelled', 'expired']);
-const allowedProviders = new Set(['mock', 'sumup', 'stripe', 'apple', 'googleplay']);
+const allowedProviders = new Set(['mock', 'sumup', 'apple', 'googleplay']);
 const allowedRoles = new Set(['admin', 'user_pro', 'user']);
 
 const requireText = (value: unknown, field: string) => {
