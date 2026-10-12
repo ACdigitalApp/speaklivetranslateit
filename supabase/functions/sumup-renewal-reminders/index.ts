@@ -36,9 +36,7 @@ Deno.serve(async (req) => {
   const resendKey = Deno.env.get("RESEND_API_KEY")?.trim();
   if (!sumupKey || !merchantCode || !resendKey) return json({ error: "Configurazione mancante" }, 500);
 
-  const url = Deno.env.get("SUPABASE_URL")!;
   const siteUrl = Deno.env.get("SITE_URL") || "https://speaklivetranslate.it";
-  const admin = createClient(url, serviceKey);
 
   const now = new Date();
   const windowEnd = new Date(now.getTime() + REMIND_DAYS_BEFORE * 86400000);
