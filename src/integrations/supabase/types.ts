@@ -68,6 +68,21 @@ export type Database = {
         }
         Relationships: []
       }
+      cron_tokens: {
+        Row: {
+          job: string
+          token: string
+        }
+        Insert: {
+          job: string
+          token?: string
+        }
+        Update: {
+          job?: string
+          token?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null

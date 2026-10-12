@@ -8,6 +8,13 @@
       "when": 1791791287751,
       "tag": "0000_migration",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1791793980067,
+      "tag": "0001_remove_renewal_reminders",
+      "breakpoints": true
     }
   ]
 }
