@@ -15,6 +15,16 @@ export async function startSumUpCheckout(plan: 'monthly' | 'yearly'): Promise<st
   return id;
 }
 
+export async function startFreeTrial() {
+  const { data, error } = await supabase.functions.invoke('sumup-checkout', { body: { action: 'start_trial' } });
+  if (error) {
+    let msg = error.message;
+    try { msg = (await (error as any).context?.json())?.error || msg; } catch { /* ignore */ }
+    throw new Error(msg);
+  }
+  return data as { premium: boolean; trial_end: string };
+}
+
 export async function verifySumUpCheckout(checkoutId?: string | null) {
   const id = checkoutId || localStorage.getItem(PENDING_KEY);
   if (!id) return { status: 'none' as const, premium: false };
@@ -29,6 +39,10 @@ export const sumupProvider: BillingProviderInterface = {
   get isAvailable() { return true; },
   async loadProducts(): Promise<SubscriptionCatalogItem[]> { return SUBSCRIPTION_CATALOG; },
   async startPurchase(planId: string): Promise<PurchaseSession> {
+    if (planId === 'trial') {
+      await startFreeTrial();
+      return { id: 'trial', provider: 'sumup', planType: 'trial', status: 'completed', createdAt: new Date().toISOString() };
+    }
     const id = await startSumUpCheckout(planId.includes('yearly') ? 'yearly' : 'monthly');
     return { id, provider: 'sumup', planType: planId, status: 'pending', createdAt: new Date().toISOString() };
   },
