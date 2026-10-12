@@ -141,7 +141,7 @@ export default function Upgrade() {
 
         {/* Provider info */}
         <div className="flex items-center justify-center gap-2 mb-4">
-          {activeProvider === 'stripe' && <Globe size={14} className="text-muted-foreground" />}
+          {activeProvider === 'sumup' && <Globe size={14} className="text-muted-foreground" />}
           {(activeProvider === 'apple' || activeProvider === 'googleplay') && <Smartphone size={14} className="text-muted-foreground" />}
           <span className="text-xs text-muted-foreground">{ctaLabel}</span>
         </div>

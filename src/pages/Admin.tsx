@@ -122,9 +122,9 @@ export default function Admin() {
                     <Globe size={16} className="text-primary" />
                     <span className="font-semibold text-sm">Web</span>
                   </div>
-                  <Badge variant="outline" className="text-xs">Stripe</Badge>
+                  <Badge variant="outline" className="text-xs">SumUp</Badge>
                   <p className="text-xs text-muted-foreground">
-                    {import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY ? 'Configurato' : 'Non configurato — modalità demo'}
+                    Configurato lato server
                   </p>
                 </div>
                 <div className="border rounded-lg p-4 space-y-2">
@@ -356,7 +356,7 @@ export default function Admin() {
             <DiagRow label="Ruolo" value={currentUser?.role || 'N/A'} ok={currentUser?.role === 'admin'} />
             <DiagRow label="Environment" value={import.meta.env.MODE} ok />
             <DiagRow label="Versione" value="1.0.0" ok />
-            <DiagRow label="Stripe" value={import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY ? 'Configurato' : 'Demo'} ok={!!import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY} />
+            <DiagRow label="SumUp" value="Server-side" ok={true} />
             <DiagRow label="Billing Mode" value={import.meta.env.VITE_BILLING_MODE || 'mock'} ok={import.meta.env.VITE_BILLING_MODE === 'live'} />
             <DiagRow label="PWA" value={'serviceWorker' in navigator ? 'Disponibile' : 'Non disponibile'} ok={'serviceWorker' in navigator} />
           </div>

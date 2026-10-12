@@ -18,7 +18,7 @@ const sections = [
   {
     icon: CreditCard,
     title: 'Problemi con pagamento o rinnovo',
-    text: 'I pagamenti sono gestiti da Stripe. Per problemi legati alla carta o al rinnovo, controlla che i dati di pagamento siano aggiornati.',
+    text: 'I pagamenti sono gestiti da SumUp. Per problemi legati alla carta o al rinnovo, controlla che i dati di pagamento siano aggiornati.',
   },
   {
     icon: Mic,

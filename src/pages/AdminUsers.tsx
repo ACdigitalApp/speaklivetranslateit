@@ -38,7 +38,7 @@ const STATUS_OPTIONS: { value: SubscriptionStatus; label: string }[] = [
 
 const PROVIDER_OPTIONS: { value: BillingProvider; label: string }[] = [
   { value: 'mock', label: 'Demo' },
-  { value: 'stripe', label: 'Stripe' },
+  { value: 'sumup', label: 'SumUp' },
   { value: 'apple', label: 'Apple' },
   { value: 'googleplay', label: 'Google Play' },
 ];
@@ -51,7 +51,7 @@ const ROLE_OPTIONS: { value: UserRole; label: string }[] = [
 
 const PROVIDER_COLORS: Record<BillingProvider, string> = {
   mock: 'bg-muted text-muted-foreground',
-  stripe: 'bg-primary/10 text-primary',
+  sumup: 'bg-primary/10 text-primary',
   apple: 'bg-muted text-foreground',
   googleplay: 'bg-muted text-foreground',
 };
@@ -59,7 +59,7 @@ const PROVIDER_COLORS: Record<BillingProvider, string> = {
 function ProviderBadge({ provider }: { provider: BillingProvider }) {
   return (
     <Badge variant="outline" className={`text-xs ${PROVIDER_COLORS[provider]}`}>
-      {provider === 'stripe' && <Globe size={10} className="mr-1" />}
+      {provider === 'sumup' && <Globe size={10} className="mr-1" />}
       {(provider === 'apple' || provider === 'googleplay') && <Smartphone size={10} className="mr-1" />}
       {getProviderLabel(provider)}
     </Badge>

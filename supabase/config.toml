@@ -6,13 +6,7 @@ verify_jwt = false
 [functions.admin-users]
 verify_jwt = false
 
-[functions.stripe-create-checkout]
-verify_jwt = false
-
-[functions.stripe-customer-portal]
-verify_jwt = false
-
-[functions.stripe-webhook]
+[functions.sumup-checkout]
 verify_jwt = false
 
 [functions.visits]

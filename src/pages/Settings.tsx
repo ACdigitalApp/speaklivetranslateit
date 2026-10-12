@@ -104,7 +104,7 @@ export default function SettingsPage() {
                 <PlanBadge plan={currentUser.plan} />
                 <StatusBadge status={currentUser.subscriptionStatus} />
                 <Badge variant="outline" className="text-xs bg-muted">
-                  {billingProvider === 'stripe' && <Globe size={10} className="mr-1" />}
+                  {billingProvider === 'sumup' && <Globe size={10} className="mr-1" />}
                   {(billingProvider === 'apple' || billingProvider === 'googleplay') && <Smartphone size={10} className="mr-1" />}
                   {getProviderLabel(billingProvider)}
                 </Badge>

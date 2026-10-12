@@ -11,7 +11,7 @@ export default function Privacy() {
     <div className="min-h-[100dvh] bg-vox-page">
       <SEOHead
         title="Privacy Policy — Speak & Translate Live"
-        description="Privacy Policy di Speak & Translate Live: come vengono gestiti i dati, i pagamenti tramite Stripe e i contatti con AC Digital App."
+        description="Privacy Policy di Speak & Translate Live: come vengono gestiti i dati, i pagamenti tramite SumUp e i contatti con AC Digital App."
         canonical="https://speaklivetranslate.it/privacy"
         ogUrl="https://speaklivetranslate.it/privacy"
       />
@@ -51,10 +51,10 @@ export default function Privacy() {
           </CardHeader>
           <CardContent className="space-y-3 text-sm text-muted-foreground leading-relaxed">
             <p>
-              I pagamenti e gli abbonamenti sono gestiti in modo sicuro tramite <strong className="text-foreground">Stripe</strong>, un provider di pagamenti certificato PCI DSS.
+              I pagamenti e gli abbonamenti sono gestiti in modo sicuro tramite <strong className="text-foreground">SumUp</strong>, un provider di pagamenti certificato PCI DSS.
             </p>
             <p>
-              <strong className="text-foreground">AC Digital App</strong> non conserva i dati completi delle carte di pagamento: questi vengono elaborati direttamente da Stripe in ambiente sicuro.
+              <strong className="text-foreground">AC Digital App</strong> non conserva i dati completi delle carte di pagamento: questi vengono elaborati direttamente da SumUp in ambiente sicuro.
             </p>
           </CardContent>
         </Card>
