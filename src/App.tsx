@@ -786,10 +786,11 @@ function App() {
                 href="https://acdigitalapp.it"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-block py-1 text-sm italic font-medium leading-snug tracking-wide underline-offset-2 hover:underline break-words"
+                className="block py-1 text-center text-sm italic font-medium leading-snug tracking-wide underline-offset-2 hover:underline break-words"
                 style={{ color: '#2D6A4F' }}
               >
-                {getAcDigitalLinkText(detectSystemLang())}
+                <span className="block">{getAcDigitalLinkText(detectSystemLang()).title}</span>
+                <span className="block text-xs font-normal">{getAcDigitalLinkText(detectSystemLang()).subtitle}</span>
               </a>
             </div>
 
