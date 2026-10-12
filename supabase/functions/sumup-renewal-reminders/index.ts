@@ -21,10 +21,15 @@ const json = (body: unknown, status = 200) =>
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
 
-  // Solo chiamate server-to-server (cron) con la service role key.
   const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-  const auth = req.headers.get("Authorization")?.replace("Bearer ", "");
-  if (auth !== serviceKey) return json({ error: "Non autorizzato" }, 401);
+  const url = Deno.env.get("SUPABASE_URL")!;
+  const admin = createClient(url, serviceKey);
+
+  // Solo chiamate server-to-server (cron): token interno salvato in tabella privata.
+  const token = req.headers.get("x-cron-token") || "";
+  const { data: tokenRow } = await admin
+    .from("cron_tokens").select("token").eq("job", "sumup-renewal-reminders").maybeSingle();
+  if (!tokenRow || token !== tokenRow.token) return json({ error: "Non autorizzato" }, 401);
 
   const sumupKey = Deno.env.get("SUMUP_API_KEY")?.trim();
   const merchantCode = Deno.env.get("SUMUP_MERCHANT_CODE")?.trim();
