@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { useAuthStore } from '@/store/useAuthStore';
-import { supabase } from '@/integrations/supabase/client';
+import { startSumUpCheckout } from '@/services/billing/providers/sumupProvider';
 import { toast } from 'sonner';
 
 const features = [
@@ -31,18 +31,12 @@ export default function Pricing() {
   const currentPlan = currentUser?.plan || 'free';
   const [loadingPlan, setLoadingPlan] = useState<'monthly' | 'yearly' | null>(null);
 
-  const startStripeCheckout = async (plan: 'monthly' | 'yearly') => {
+  const startCheckout = async (plan: 'monthly' | 'yearly') => {
     setLoadingPlan(plan);
     try {
-      const { data, error } = await supabase.functions.invoke('stripe-create-checkout', {
-        body: { plan, email: currentUser?.email },
-      });
-      if (error) throw error;
-      const url = (data as any)?.checkout_url;
-      if (!url) throw new Error('checkout_url mancante');
-      window.location.href = url;
+      await startSumUpCheckout(plan);
     } catch (err: any) {
-      console.error('[stripe-checkout] error', err);
+      console.error('[sumup-checkout] error', err);
       toast.error('Checkout non disponibile al momento. Riprova tra poco.');
       setLoadingPlan(null);
     }
@@ -65,7 +59,7 @@ export default function Pricing() {
             Traduzioni vocali, foto e PDF senza limiti
           </p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
-            <Button size="lg" onClick={() => startStripeCheckout('monthly')}>
+            <Button size="lg" onClick={() => startCheckout('monthly')}>
               <Zap size={18} className="mr-2" /> Prova 7 giorni gratis
             </Button>
             <Button size="lg" variant="outline" onClick={() => document.getElementById('plans')?.scrollIntoView({ behavior: 'smooth' })}>
@@ -124,7 +118,7 @@ export default function Pricing() {
                 <li className="flex gap-2"><Check size={16} className="text-primary shrink-0 mt-0.5" /> Cronologia completa</li>
                 <li className="flex gap-2"><Check size={16} className="text-primary shrink-0 mt-0.5" /> Supporto prioritario</li>
               </ul>
-              <Button className="w-full" disabled={loadingPlan !== null} onClick={() => startStripeCheckout('monthly')}>
+              <Button className="w-full" disabled={loadingPlan !== null} onClick={() => startCheckout('monthly')}>
                 {loadingPlan === 'monthly' ? <Loader2 size={16} className="mr-2 animate-spin" /> : null}
                 Passa al Mensile
               </Button>
@@ -150,7 +144,7 @@ export default function Pricing() {
                 <li className="flex gap-2"><Check size={16} className="text-primary shrink-0 mt-0.5" /> Risparmi €45,89/anno</li>
                 <li className="flex gap-2"><Check size={16} className="text-primary shrink-0 mt-0.5" /> Funzionalità esclusive</li>
               </ul>
-              <Button className="w-full" disabled={loadingPlan !== null} onClick={() => startStripeCheckout('yearly')}>
+              <Button className="w-full" disabled={loadingPlan !== null} onClick={() => startCheckout('yearly')}>
                 {loadingPlan === 'yearly' ? <Loader2 size={16} className="mr-2 animate-spin" /> : null}
                 Passa all'Annuale
               </Button>

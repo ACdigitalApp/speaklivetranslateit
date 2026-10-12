@@ -1,13 +1,13 @@
 import type { BillingProviderInterface, BillingProvider } from '@/types/billing';
 import { detectPlatform, getDefaultProvider } from '@/config/subscriptions';
 import { mockProvider } from './providers/mockProvider';
-import { stripeProvider } from './providers/stripeProvider';
+import { sumupProvider } from './providers/sumupProvider';
 import { appleProvider } from './providers/appleProvider';
 import { googlePlayProvider } from './providers/googlePlayProvider';
 
 const providers: Record<BillingProvider, BillingProviderInterface> = {
   mock: mockProvider,
-  stripe: stripeProvider,
+  sumup: sumupProvider,
   apple: appleProvider,
   googleplay: googlePlayProvider,
 };

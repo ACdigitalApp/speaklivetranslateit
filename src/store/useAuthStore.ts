@@ -48,7 +48,7 @@ const DEFAULT_MOCK_USERS: AppUser[] = [
     id: '2', name: 'Mario Rossi', email: 'mario@example.com', role: 'user_pro',
     notifications: true, registeredAt: '2024-06-10T08:00:00Z', lastAccess: '2025-03-20T14:30:00Z',
     whatsapp: '+39 340 5556677',
-    plan: 'premium_monthly', subscriptionStatus: 'active', billingProvider: 'stripe',
+    plan: 'premium_monthly', subscriptionStatus: 'active', billingProvider: 'sumup',
     subscriptionStart: '2025-02-20T10:00:00Z',
     subscriptionEnd: '2025-04-20T10:00:00Z',
     nextBillingDate: '2025-04-20T10:00:00Z',

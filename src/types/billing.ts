@@ -1,4 +1,4 @@
-export type BillingProvider = 'mock' | 'stripe' | 'apple' | 'googleplay';
+export type BillingProvider = 'mock' | 'sumup' | 'apple' | 'googleplay';
 
 export type PlatformType = 'web' | 'ios' | 'android';
 
@@ -10,7 +10,7 @@ export type SubscriptionCatalogItem = {
   currency: string;
   interval: 'month' | 'year';
   providerProductIds: {
-    stripe: string;
+    sumup: string;
     apple: string;
     googleplay: string;
   };
