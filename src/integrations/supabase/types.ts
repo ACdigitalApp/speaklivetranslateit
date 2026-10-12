@@ -353,7 +353,12 @@ export type Database = {
       }
     }
     Enums: {
-      admin_billing_provider: "mock" | "stripe" | "apple" | "googleplay"
+      admin_billing_provider:
+        | "mock"
+        | "stripe"
+        | "apple"
+        | "googleplay"
+        | "sumup"
       admin_plan_type:
         | "free"
         | "trial"
@@ -499,7 +504,13 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      admin_billing_provider: ["mock", "stripe", "apple", "googleplay"],
+      admin_billing_provider: [
+        "mock",
+        "stripe",
+        "apple",
+        "googleplay",
+        "sumup",
+      ],
       admin_plan_type: [
         "free",
         "trial",
