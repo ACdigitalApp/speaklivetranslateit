@@ -228,13 +228,13 @@ export function getStrings(lang: AppLang): Strings {
   return STRINGS[lang] ?? STRINGS.it;
 }
 
-// Link to the AC Digital App portal (Italian and English; other languages fall back to English)
-const AC_DIGITAL_LINK_TEXT: Partial<Record<AppLang, string>> = {
-  it: 'AC Digital App — Scopri le altre applicazioni',
-  en: 'AC Digital App — Discover our other apps',
+// Link to the AC Digital App portal: brand line + descriptive line (Italian and English; other languages fall back to English)
+const AC_DIGITAL_LINK_TEXT: Partial<Record<AppLang, { title: string; subtitle: string }>> = {
+  it: { title: 'AC Digital App', subtitle: 'Scopri le altre applicazioni' },
+  en: { title: 'AC Digital App', subtitle: 'Discover our other apps' },
 };
 
-export function getAcDigitalLinkText(lang: AppLang): string {
+export function getAcDigitalLinkText(lang: AppLang): { title: string; subtitle: string } {
   return AC_DIGITAL_LINK_TEXT[lang] ?? AC_DIGITAL_LINK_TEXT.en!;
 }
 
