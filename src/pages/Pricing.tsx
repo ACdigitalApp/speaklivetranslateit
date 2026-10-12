@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { useAuthStore } from '@/store/useAuthStore';
-import { startSumUpCheckout } from '@/services/billing/providers/sumupProvider';
+import { startSumUpCheckout, startFreeTrial } from '@/services/billing/providers/sumupProvider';
 import { toast } from 'sonner';
 
 const features = [
@@ -42,6 +42,17 @@ export default function Pricing() {
     }
   };
 
+  const startTrial = async () => {
+    if (!currentUser) { navigate('/login'); return; }
+    try {
+      await startFreeTrial();
+      toast.success('Prova gratuita di 7 giorni attivata!');
+      navigate('/settings');
+    } catch (err: any) {
+      toast.error(err?.message || 'Impossibile attivare la prova gratuita.');
+    }
+  };
+
   return (
     <div className="min-h-[100dvh] bg-vox-page">
       <div className="max-w-4xl mx-auto px-4 py-8">
@@ -59,7 +70,7 @@ export default function Pricing() {
             Traduzioni vocali, foto e PDF senza limiti
           </p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
-            <Button size="lg" onClick={() => startCheckout('monthly')}>
+            <Button size="lg" onClick={startTrial}>
               <Zap size={18} className="mr-2" /> Prova 7 giorni gratis
             </Button>
             <Button size="lg" variant="outline" onClick={() => document.getElementById('plans')?.scrollIntoView({ behavior: 'smooth' })}>

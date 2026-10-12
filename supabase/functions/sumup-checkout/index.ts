@@ -19,6 +19,7 @@ const json = (body: unknown, status = 200) =>
 const Body = z.discriminatedUnion("action", [
   z.object({ action: z.literal("create"), plan: z.enum(["monthly", "yearly"]) }),
   z.object({ action: z.literal("verify"), checkout_id: z.string().min(1).max(100) }),
+  z.object({ action: z.literal("start_trial") }),
 ]);
 
 Deno.serve(async (req) => {
@@ -38,7 +39,7 @@ Deno.serve(async (req) => {
   const email = userData.user.email.toLowerCase();
 
   const { data: profile } = await admin
-    .from("profiles").select("id, total_paid, balance")
+    .from("profiles").select("id, total_paid, balance, trial_start, subscription_end, subscription_status")
     .or(`user_id.eq.${userData.user.id},email.eq.${email}`).limit(1).maybeSingle();
   if (!profile) return json({ error: "Profilo non trovato" }, 404);
 
@@ -47,6 +48,22 @@ Deno.serve(async (req) => {
   const sumupHeaders = { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" };
 
   try {
+    if (parsed.data.action === "start_trial") {
+      // Prova gratuita 7 giorni: una sola volta per utente, decisa lato server.
+      if (profile.trial_start) return json({ error: "Prova gratuita già utilizzata" }, 409);
+      if (profile.subscription_status === "active") return json({ error: "Premium già attivo" }, 409);
+      const now = new Date();
+      const end = new Date(now.getTime() + 7 * 86400000);
+      const { error: upErr } = await admin.from("profiles").update({
+        plan: "trial", subscription_status: "in_trial",
+        trial_start: now.toISOString(), trial_end: end.toISOString(),
+        subscription_start: now.toISOString(), subscription_end: end.toISOString(),
+        next_billing_date: end.toISOString(),
+      }).eq("id", profile.id).is("trial_start", null);
+      if (upErr) throw upErr;
+      return json({ premium: true, plan: "trial", trial_end: end.toISOString() });
+    }
+
     if (parsed.data.action === "create") {
       const plan = PLANS[parsed.data.plan];
       const siteUrl = Deno.env.get("SITE_URL") || "https://speaklivetranslate.it";
@@ -91,7 +108,9 @@ Deno.serve(async (req) => {
     const { data: existing } = await admin.from("user_payment_transactions").select("id").eq("reference", ref).maybeSingle();
     if (!existing) {
       const now = new Date();
-      const end = new Date(now);
+      // Rinnovo: i giorni residui (prova o periodo pagato) non si perdono, il nuovo periodo parte dalla scadenza attuale.
+      const curEnd = profile.subscription_end ? new Date(profile.subscription_end) : null;
+      const end = new Date(curEnd && curEnd > now ? curEnd : now);
       end.setMonth(end.getMonth() + plan.months);
       const { error: txErr } = await admin.from("user_payment_transactions").insert({
         user_id: profile.id, description: `SumUp ${plan.label}`, amount: plan.amount,
@@ -101,7 +120,7 @@ Deno.serve(async (req) => {
       if (!txErr) {
         await admin.from("profiles").update({
           plan: plan.planType, subscription_status: "active", billing_provider: "sumup",
-          subscription_start: now.toISOString(), subscription_end: end.toISOString(),
+          subscription_end: end.toISOString(),
           next_billing_date: end.toISOString(),
           total_paid: Number(profile.total_paid || 0) + plan.amount,
           balance: Number(profile.balance || 0) + plan.amount,

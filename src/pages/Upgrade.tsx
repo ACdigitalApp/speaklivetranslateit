@@ -36,7 +36,7 @@ export default function Upgrade() {
     try {
       const result = await startPurchase(planId);
       if (result?.status === 'completed') {
-        toast.success('Acquisto completato!');
+        toast.success(planId === 'trial' ? 'Prova gratuita di 7 giorni attivata!' : 'Acquisto completato!');
         navigate('/settings');
       }
     } catch (err: any) {
@@ -95,7 +95,7 @@ export default function Upgrade() {
 
         {/* Plans */}
         <div className="space-y-3 mb-6">
-          {isMock && (
+          {(plan === 'free') && (
             <Card className="cursor-pointer hover:border-primary/40 transition-colors" onClick={() => handlePurchase('trial')}>
               <CardContent className="flex items-center justify-between p-4">
                 <div>
