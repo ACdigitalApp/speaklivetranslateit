@@ -780,8 +780,8 @@ function App() {
       <SEOHead jsonLd={seoJsonLd} />
       <div className="mx-auto flex min-h-screen w-full max-w-md flex-col px-4 pb-6 pt-4 sm:max-w-lg">
         <header className="mb-4 rounded-[24px] border border-[#D7E3DA] bg-white/55 px-4 py-4 shadow-[0_8px_24px_rgba(22,42,28,0.08)] backdrop-blur-sm">
-          <div className="flex items-start justify-between gap-3">
-            <div className="min-w-0 flex-1">
+          <div className="flex flex-col items-center gap-2 sm:flex-row sm:items-start sm:justify-between sm:gap-3">
+            <div className="w-full min-w-0 text-center sm:w-auto sm:flex-1">
               <a
                 href="https://acdigitalapp.it"
                 target="_blank"
