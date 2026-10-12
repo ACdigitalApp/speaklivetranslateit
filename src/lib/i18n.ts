@@ -228,6 +228,16 @@ export function getStrings(lang: AppLang): Strings {
   return STRINGS[lang] ?? STRINGS.it;
 }
 
+// Link to the AC Digital App portal (Italian and English; other languages fall back to English)
+const AC_DIGITAL_LINK_TEXT: Partial<Record<AppLang, string>> = {
+  it: 'AC Digital App — Scopri le altre applicazioni',
+  en: 'AC Digital App — Discover our other apps',
+};
+
+export function getAcDigitalLinkText(lang: AppLang): string {
+  return AC_DIGITAL_LINK_TEXT[lang] ?? AC_DIGITAL_LINK_TEXT.en!;
+}
+
 export function detectSystemLang(): AppLang {
   const sys = navigator.language?.slice(0, 2).toLowerCase();
   const supported: AppLang[] = ['it','en','es','fr','de','zh','sq'];

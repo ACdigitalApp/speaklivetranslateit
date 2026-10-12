@@ -33,6 +33,7 @@ import { SettingsModal } from "@/components/vox/VoxUnified";
 import { VoiceSetupModal } from "@/components/vox/VoiceSetupModal";
 import SEOHead from "@/components/SEOHead";
 import HomeFAQ, { HOME_FAQ_DATA } from "@/components/HomeFAQ";
+import { detectSystemLang, getAcDigitalLinkText } from "@/lib/i18n";
 
 declare global {
   interface Window {
@@ -780,15 +781,15 @@ function App() {
       <div className="mx-auto flex min-h-screen w-full max-w-md flex-col px-4 pb-6 pt-4 sm:max-w-lg">
         <header className="mb-4 rounded-[24px] border border-[#D7E3DA] bg-white/55 px-4 py-4 shadow-[0_8px_24px_rgba(22,42,28,0.08)] backdrop-blur-sm">
           <div className="flex items-start justify-between gap-3">
-            <div className="shrink-0">
+            <div className="min-w-0 flex-1">
               <a
                 href="https://acdigitalapp.it"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-sm italic font-medium tracking-wide hover:underline"
+                className="inline-block py-1 text-sm italic font-medium leading-snug tracking-wide underline-offset-2 hover:underline break-words"
                 style={{ color: '#2D6A4F' }}
               >
-                by AC Digital App
+                {getAcDigitalLinkText(detectSystemLang())}
               </a>
             </div>
 
