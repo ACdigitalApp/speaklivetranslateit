@@ -22,6 +22,45 @@ const Body = z.discriminatedUnion("action", [
   z.object({ action: z.literal("start_trial") }),
 ]);
 
+const CENTRAL_URL = "https://svvvcitnoemgopoinlzp.supabase.co/functions/v1/ingest-payment";
+
+async function hmacHex(secret: string, msg: string) {
+  const key = await crypto.subtle.importKey("raw", new TextEncoder().encode(secret), { name: "HMAC", hash: "SHA-256" }, false, ["sign"]);
+  const sig = await crypto.subtle.sign("HMAC", key, new TextEncoder().encode(msg));
+  return Array.from(new Uint8Array(sig)).map((b) => b.toString(16).padStart(2, "0")).join("");
+}
+
+// Invio pagamento confermato al centro AC Digital App: max 3 tentativi, idempotente sul reference, esito registrato.
+// deno-lint-ignore no-explicit-any
+async function sendToCentral(admin: any, payload: Record<string, unknown>) {
+  const idem = `central-${payload.reference}`;
+  const { data: done } = await admin.from("admin_notification_log").select("id").eq("idempotency_key", idem).eq("status", "sent").maybeSingle();
+  if (done) return;
+  const secret = Deno.env.get("AC_DIGITAL_INGEST_SECRET")?.trim();
+  let lastErr = "secret_missing";
+  if (secret) {
+    const body = JSON.stringify(payload);
+    for (let attempt = 1; attempt <= 3; attempt++) {
+      try {
+        const ts = String(Date.now());
+        const res = await fetch(CENTRAL_URL, {
+          method: "POST",
+          headers: { "Content-Type": "application/json", "x-app-key": "speaklive", "x-timestamp": ts, "x-signature": await hmacHex(secret, `${ts}.${body}`) },
+          body,
+        });
+        const j = await res.json().catch(() => ({}));
+        if (j?.ok === true) { lastErr = ""; break; }
+        lastErr = `http_${res.status}:${JSON.stringify(j).slice(0, 200)}`;
+      } catch (e) { lastErr = String((e as Error).message).slice(0, 200); }
+      if (attempt < 3) await new Promise((r) => setTimeout(r, attempt * 1000));
+    }
+  }
+  await admin.from("admin_notification_log").insert({
+    app_key: "speaklive", event_type: "central_ingest", idempotency_key: idem, recipient: CENTRAL_URL,
+    status: lastErr ? "failed" : "sent", error: lastErr || null, payload,
+  });
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
 
@@ -125,15 +164,26 @@ Deno.serve(async (req) => {
           total_paid: Number(profile.total_paid || 0) + plan.amount,
           balance: Number(profile.balance || 0) + plan.amount,
         }).eq("id", profile.id);
-        fetch(`${url}/functions/v1/notify-admin`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json", Authorization: `Bearer ${Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")}` },
-          body: JSON.stringify({
-            appKey: "speak_translate_live", appName: "Speak & Translate Live", eventType: "new_payment",
-            idempotencyKey: `sumup-${co.id}`, environment: "production",
-            data: { email, plan: m[1], amount: plan.amount, currency: CURRENCY, subscription_status: "active" },
-          }),
-        }).catch(() => {});
+        let emailStatus = "failed";
+        try {
+          const nr = await fetch(`${url}/functions/v1/notify-admin`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json", Authorization: `Bearer ${Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")}` },
+            body: JSON.stringify({
+              appKey: "speak_translate_live", appName: "Speak & Translate Live", eventType: "new_payment",
+              idempotencyKey: `sumup-${co.id}`, environment: "production",
+              data: { email, plan: m[1], amount: plan.amount, currency: CURRENCY, subscription_status: "active" },
+            }),
+          });
+          const nj = await nr.json().catch(() => ({}));
+          emailStatus = nr.ok && nj?.ok === true ? (nj.deduped ? "already_sent" : "sent") : "failed";
+        } catch { emailStatus = "failed"; }
+        await sendToCentral(admin, {
+          app_key: "speaklive", provider: "sumup", reference: ref,
+          amount_cents: Math.round(plan.amount * 100), currency: CURRENCY, status: "paid",
+          plan: plan.planType, paid_at: co.date || now.toISOString(), email_status: emailStatus,
+        });
+
       }
     }
     return json({ status: "PAID", premium: true, plan: plan.planType });
