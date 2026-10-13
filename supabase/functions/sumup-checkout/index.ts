@@ -23,6 +23,7 @@ const Body = z.discriminatedUnion("action", [
 ]);
 
 const CENTRAL_URL = "https://svvvcitnoemgopoinlzp.supabase.co/functions/v1/ingest-payment";
+const CENTRAL_APP_KEY = "speak-translate-live";
 
 async function hmacHex(secret: string, msg: string) {
   const key = await crypto.subtle.importKey("raw", new TextEncoder().encode(secret), { name: "HMAC", hash: "SHA-256" }, false, ["sign"]);
@@ -45,7 +46,7 @@ async function sendToCentral(admin: any, payload: Record<string, unknown>) {
         const ts = String(Date.now());
         const res = await fetch(CENTRAL_URL, {
           method: "POST",
-          headers: { "Content-Type": "application/json", "x-app-key": "speaklive", "x-timestamp": ts, "x-signature": await hmacHex(secret, `${ts}.${body}`) },
+          headers: { "Content-Type": "application/json", "x-app-key": CENTRAL_APP_KEY, "x-timestamp": ts, "x-signature": await hmacHex(secret, `${ts}.${body}`) },
           body,
         });
         const j = await res.json().catch(() => ({}));
@@ -56,7 +57,7 @@ async function sendToCentral(admin: any, payload: Record<string, unknown>) {
     }
   }
   await admin.from("admin_notification_log").insert({
-    app_key: "speaklive", event_type: "central_ingest", idempotency_key: idem, recipient: CENTRAL_URL,
+    app_key: CENTRAL_APP_KEY, event_type: "central_ingest", idempotency_key: idem, recipient: CENTRAL_URL,
     status: lastErr ? "failed" : "sent", error: lastErr || null, payload,
   });
 }
@@ -179,7 +180,7 @@ Deno.serve(async (req) => {
           emailStatus = nr.ok && nj?.ok === true ? (nj.deduped ? "already_sent" : "sent") : "failed";
         } catch { emailStatus = "failed"; }
         await sendToCentral(admin, {
-          app_key: "speaklive", provider: "sumup", reference: ref,
+          app_key: CENTRAL_APP_KEY, provider: "sumup", reference: ref,
           amount_cents: Math.round(plan.amount * 100), currency: CURRENCY, status: "paid",
           plan: plan.planType, paid_at: co.date || now.toISOString(), email_status: emailStatus,
         });
