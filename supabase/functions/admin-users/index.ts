@@ -66,24 +66,16 @@ Deno.serve(async (req) => {
       auth: { persistSession: false, autoRefreshToken: false },
     });
 
-    let email = req.headers.get('x-admin-email')?.toLowerCase() ?? '';
-    if (authHeader.startsWith('Bearer ')) {
-      const token = authHeader.replace('Bearer ', '');
-      try {
-        const { data: authData } = await adminClient.auth.getUser(token);
-        if (authData.user?.email) email = authData.user.email.toLowerCase();
-      } catch { /* ignore: token may be anon publishable key */ }
-    }
-
-    const legacyPasscode = req.headers.get('x-admin-passcode') ?? '';
-    if (!email || (email === 'acdigital.app@gmail.com' && legacyPasscode !== 'acdigital2026' && !authHeader.startsWith('Bearer '))) {
+    if (!authHeader.startsWith('Bearer ')) {
       return json({ error: 'Accesso non autorizzato' }, 401);
     }
+    const { data: authData, error: authError } = await adminClient.auth.getUser(authHeader.slice(7));
+    if (authError || !authData.user) return json({ error: 'Accesso non autorizzato' }, 401);
 
     const { data: adminProfile, error: adminError } = await adminClient
       .from('profiles')
       .select('id, email, deleted_at')
-      .eq('email', email)
+      .eq('user_id', authData.user.id)
       .is('deleted_at', null)
       .maybeSingle();
 
