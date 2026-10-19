@@ -1,16 +1,17 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import type { AppUser, UserRole } from '@/types/auth';
-import { setAdminCredentials, clearAdminCredentials } from '@/services/adminUsersApi';
+import { clearAdminCredentials } from '@/services/adminUsersApi';
 import { supabase } from '@/integrations/supabase/client';
 import type { Session, User } from '@supabase/supabase-js';
 
-export const DEMO_MODE = true; // Always enabled until real auth backend is connected
+export const DEMO_MODE = false;
 
 type AuthState = {
   currentUser: AppUser | null;
   isAuthenticated: boolean;
   guestMode: boolean;
+  authReady: boolean;
   login: (email: string, password: string) => Promise<boolean>;
   register: (data: { name: string; email: string; password: string; whatsapp?: string }) => Promise<boolean>;
   logout: () => void;
@@ -123,89 +124,30 @@ export const useAuthStore = create<AuthState>()(
       currentUser: null,
       isAuthenticated: false,
       guestMode: false,
+      authReady: false,
 
-  login: async (email, _password) => {
-    if (!DEMO_MODE) return false;
-    if (!_password) return false;
-
-    const normalizedEmail = email.trim().toLowerCase();
-    const ADMIN_EMAIL = 'acdigital.app@gmail.com';
-
-    if (normalizedEmail === ADMIN_EMAIL) {
-      // Real admin password is validated server-side via Supabase Auth.
-      // Demo mock login only requires a non-empty password here.
-      const existing = getMockUsers().find(u => u.email.toLowerCase() === ADMIN_EMAIL);
-      const adminUser: AppUser = {
-        ...MOCK_ADMIN,
-        ...(existing ?? {}),
-        email: ADMIN_EMAIL,
-        role: 'admin',
-        lastAccess: new Date().toISOString(),
-      };
-      const others = getMockUsers().filter(u => u.email.toLowerCase() !== ADMIN_EMAIL);
-      saveMockUsers([adminUser, ...others]);
-      setAdminCredentials(adminUser.email, _password);
-      set({ currentUser: adminUser, isAuthenticated: true });
-      return true;
-    }
-
-    const found = getMockUsers().find(u => u.email.toLowerCase() === normalizedEmail);
-    if (found) {
-      if (found.role === 'admin') return false;
-      set({ currentUser: { ...found, lastAccess: new Date().toISOString() }, isAuthenticated: true });
-      return true;
-    }
-    const newUser: AppUser = {
-      id: Date.now().toString(),
-      name: email.split('@')[0],
-      email,
-      role: 'user',
-      notifications: true,
-      registeredAt: new Date().toISOString(),
-      lastAccess: new Date().toISOString(),
-      plan: 'free',
-      subscriptionStatus: 'expired',
-      totalPaid: 0,
-      balance: 0,
-      transactions: [],
-    };
-    saveMockUsers([...getMockUsers(), newUser]);
-    set({ currentUser: newUser, isAuthenticated: true });
+  login: async (email, password) => {
+    const result = await signInWithSupabase(email, password);
+    if (!result.ok || !result.user || !result.session) return false;
+    await syncAuthenticatedUser(result.user);
     return true;
   },
 
   register: async (data) => {
-    const newUser: AppUser = {
-      id: Date.now().toString(),
-      name: data.name,
-      email: data.email,
-      role: 'user',
-      whatsapp: data.whatsapp,
-      notifications: true,
-      registeredAt: new Date().toISOString(),
-      lastAccess: new Date().toISOString(),
-      plan: 'free',
-      subscriptionStatus: 'expired',
-      totalPaid: 0,
-      balance: 0,
-      transactions: [],
-    };
-    saveMockUsers([...getMockUsers(), newUser]);
-    set({ currentUser: newUser, isAuthenticated: true });
-    import('@/lib/notifyAdmin').then(({ notifyAdmin }) => {
-      notifyAdmin('new_signup', `signup-${newUser.id}`, {
-        userId: newUser.id,
-        email: newUser.email,
-        name: newUser.name,
-        whatsapp: newUser.whatsapp,
-        plan: newUser.plan,
-        provider: 'email',
-      });
+    const result = await signUpWithSupabase(data.email, data.password, {
+      name: data.name, whatsapp: data.whatsapp,
     });
+    if (!result.ok) return false;
+    // No local account or authenticated state before email confirmation.
+    if (result.session && result.user) await syncAuthenticatedUser(result.user);
     return true;
   },
 
-  logout: () => { clearAdminCredentials(); set({ currentUser: null, isAuthenticated: false }); },
+  logout: () => {
+    clearAdminCredentials();
+    void signOutSupabase();
+    set({ currentUser: null, isAuthenticated: false });
+  },
   setGuestMode: (v) => set({ guestMode: v }),
   updateUser: (data) => {
     const { currentUser } = get();
@@ -218,17 +160,8 @@ export const useAuthStore = create<AuthState>()(
       name: 'speakeasy_auth',
       storage: createJSONStorage(() => localStorage),
       partialize: (state) => ({
-        currentUser: state.currentUser,
-        isAuthenticated: state.isAuthenticated,
         guestMode: state.guestMode,
       }),
-      // HARD OVERRIDE: garantisce che l'email admin ufficiale resti admin
-      // anche se in localStorage il ruolo fosse stato sovrascritto.
-      onRehydrateStorage: () => (state) => {
-        if (state?.currentUser?.email?.toLowerCase() === 'acdigital.app@gmail.com') {
-          state.currentUser = { ...state.currentUser, role: 'admin' };
-        }
-      },
     }
   )
 );
@@ -387,3 +320,49 @@ export const cleanupDemoAuthStorage = () => {
 
 // Riferimento per evitare warning di unused import.
 void SUPABASE_ADMIN_EMAIL;
+
+
+/** Restore verified sessions, never persisted demo privileges. */
+const syncAuthenticatedUser = async (user: User) => {
+  const { data: profile } = await supabase.from('profiles').select('*')
+    .eq('user_id', user.id).is('deleted_at', null).maybeSingle();
+  const role = profile ? await fetchUserRole(user.id) : 'user';
+  useAuthStore.setState({
+    authReady: true,
+    isAuthenticated: true,
+    currentUser: {
+      id: profile?.id ?? user.id,
+      name: profile?.name ?? String(user.user_metadata?.name ?? ''),
+      email: user.email ?? '',
+      role: role ?? 'user',
+      whatsapp: profile?.whatsapp ?? user.user_metadata?.whatsapp,
+      notifications: profile?.notifications ?? true,
+      registeredAt: profile?.registered_at ?? user.created_at,
+      lastAccess: profile?.last_access ?? new Date().toISOString(),
+      plan: profile?.plan ?? 'free',
+      subscriptionStatus: profile?.subscription_status ?? 'inactive',
+      subscriptionEnd: profile?.subscription_end ?? undefined,
+      trialStart: profile?.trial_start ?? undefined,
+      trialEnd: profile?.trial_end ?? undefined,
+      totalPaid: Number(profile?.total_paid ?? 0),
+      balance: Number(profile?.balance ?? 0),
+      transactions: [],
+    },
+  });
+};
+
+export const restoreAuthenticatedSession = async () => {
+  const { data: { user } } = await supabase.auth.getUser();
+  if (user) await syncAuthenticatedUser(user);
+  else useAuthStore.setState({ authReady: true, currentUser: null, isAuthenticated: false });
+};
+
+supabase.auth.onAuthStateChange((event) => {
+  if (event === 'SIGNED_OUT') {
+    useAuthStore.setState({ authReady: true, currentUser: null, isAuthenticated: false });
+  } else {
+    // Outside the auth callback to avoid locking subsequent auth requests.
+    setTimeout(() => { void restoreAuthenticatedSession(); }, 0);
+  }
+});
+void restoreAuthenticatedSession();

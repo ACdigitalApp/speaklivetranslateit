@@ -4,29 +4,11 @@ import type { AppUser } from '@/types/auth';
 const ADMIN_EMAIL_KEY = 'admin_email';
 const ADMIN_PASSCODE_KEY = 'admin_passcode';
 
-export const setAdminCredentials = (email: string, passcode: string) => {
-  try {
-    sessionStorage.setItem(ADMIN_EMAIL_KEY, email);
-    sessionStorage.setItem(ADMIN_PASSCODE_KEY, passcode);
-  } catch { /* noop */ }
-};
-
 export const clearAdminCredentials = () => {
   try {
     sessionStorage.removeItem(ADMIN_EMAIL_KEY);
     sessionStorage.removeItem(ADMIN_PASSCODE_KEY);
   } catch { /* noop */ }
-};
-
-const adminHeaders = () => {
-  const headers: Record<string, string> = {};
-  try {
-    const email = sessionStorage.getItem(ADMIN_EMAIL_KEY);
-    const pw = sessionStorage.getItem(ADMIN_PASSCODE_KEY);
-    if (email) headers['x-admin-email'] = email;
-    if (pw) headers['x-admin-passcode'] = pw;
-  } catch { /* noop */ }
-  return headers;
 };
 
 type RawUser = Record<string, unknown>;
@@ -67,7 +49,6 @@ const mapUser = (raw: RawUser): AppUser => ({
 const invoke = async (body: Record<string, unknown>) => {
   const { data, error } = await supabase.functions.invoke('admin-users', {
     body,
-    headers: adminHeaders(),
   });
   if (error) {
     const msg = (data && typeof data === 'object' && 'error' in data && (data as { error: string }).error)
