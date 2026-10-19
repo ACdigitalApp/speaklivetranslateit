@@ -25,7 +25,7 @@ export default function Login() {
     if (!email || !password) { setError('Compila tutti i campi'); return; }
     setLoading(true);
     setError('');
-    const ok = await login(email, password);
+    const ok = await login(email.trim().toLowerCase(), password);
     setLoading(false);
     if (ok) {
       const user = useAuthStore.getState().currentUser;
