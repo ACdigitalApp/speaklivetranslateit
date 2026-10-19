@@ -16,6 +16,7 @@ import {
   FileText,
   Languages,
   LogIn,
+  LogOut,
   Mic,
   Send,
   Settings,
