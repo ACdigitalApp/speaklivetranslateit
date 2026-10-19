@@ -15,6 +15,13 @@
       "when": 1791793980067,
       "tag": "0001_remove_renewal_reminders",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1792389288094,
+      "tag": "0002_restore_authenticated_admin_policy_helper",
+      "breakpoints": true
     }
   ]
 }

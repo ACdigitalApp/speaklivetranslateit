@@ -1,0 +1,1 @@
+GRANT EXECUTE ON FUNCTION public.current_admin_profile_id() TO authenticated;
