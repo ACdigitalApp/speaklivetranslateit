@@ -8,7 +8,9 @@ type Props = {
 };
 
 export function AuthGuard({ children, requiredRole }: Props) {
-  const { isAuthenticated, currentUser } = useAuthStore();
+  const { isAuthenticated, currentUser, authReady } = useAuthStore();
+
+  if (!authReady) return null;
 
   if (!isAuthenticated) {
     return <Navigate to="/login" replace />;

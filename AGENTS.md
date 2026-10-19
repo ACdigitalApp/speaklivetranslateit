@@ -1,0 +1,2 @@
+# Authentication
+- Registration and login use hosted authentication, and admin listing uses a server-verified session linked to profiles and protected roles; browser demo records are not authoritative because they are not registered accounts.

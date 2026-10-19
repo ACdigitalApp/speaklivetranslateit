@@ -20,6 +20,7 @@ export default function Register() {
   const [termsAccepted, setTermsAccepted] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [confirmationSent, setConfirmationSent] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -31,7 +32,7 @@ export default function Register() {
     setError('');
     const ok = await register({ name, email, password, whatsapp: whatsapp || undefined });
     setLoading(false);
-    if (ok) navigate('/');
+    if (ok) setConfirmationSent(true);
     else setError('Registrazione fallita');
   };
 
@@ -46,7 +47,12 @@ export default function Register() {
           <p className="text-sm text-muted-foreground">Registrati a Speak & Translate Live</p>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
+          {confirmationSent ? (
+            <div className="space-y-4 text-center">
+              <p className="text-foreground">Controlla la tua email e conferma l’indirizzo per completare la registrazione.</p>
+              <Button onClick={() => navigate('/login')}>Vai al login</Button>
+            </div>
+          ) : <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="name">Nome *</Label>
               <Input id="name" placeholder="Il tuo nome" value={name} onChange={e => setName(e.target.value)} />
@@ -95,7 +101,7 @@ export default function Register() {
             <Button type="submit" className="w-full" disabled={loading}>
               {loading ? 'Registrazione...' : 'Registrati'}
             </Button>
-          </form>
+          </form>}
           <p className="text-sm text-center text-muted-foreground mt-6">
             Hai già un account?{' '}
             <Link to="/login" className="text-primary font-medium hover:underline">Accedi</Link>
